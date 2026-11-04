@@ -1,0 +1,41 @@
+.shape-stage {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+.shape-seat {
+  display: grid;
+  place-items: center;
+  width: clamp(96px, 18vw, 148px);
+  aspect-ratio: 1;
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  background: var(--white);
+}
+.shape-picture {
+  display: block;
+  width: 100%;
+  max-width: 70px;
+  aspect-ratio: 1;
+  margin-inline: auto;
+}
+.shape-picture path {
+  fill: var(--shape-fill);
+  stroke: #506751;
+  stroke-width: 2.5;
+  stroke-linejoin: round;
+}
+.shape-seat .shape-picture { width: 85%; max-width: none; }
+.shape-seat:not(.is-solved) .shape-picture path { stroke-dasharray: 5 5; }
+.shape-seat.is-highlighted .shape-picture path { stroke: #9a632d; stroke-width: 4; }
+.shape-seat.is-solved .shape-picture path { stroke: #506751; stroke-width: 2.5; }
+.shape-example { max-width: 108px; font-size: .85rem; color: var(--muted); }
+@media (prefers-reduced-motion: no-preference) {
+  .shape-seat.is-solved .shape-picture { animation: shape-fit .25s ease-out; }
+}
+@keyframes shape-fit {
+  from { opacity: .4; scale: .8; }
+  to { opacity: 1; scale: 1; }
+}
