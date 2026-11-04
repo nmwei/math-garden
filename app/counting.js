@@ -14,7 +14,6 @@ function setupCounting() {
   const next = document.querySelector('#next-counting');
   const help = document.querySelector('#help-counting');
   const hear = document.querySelector('#count-hear');
-  const switchGame = document.querySelector('#count-switch');
   const amounts = [[1, 3, 5], [2, 5, 4]];
   const choices = [[1, 3, 2], [3, 4, 2], [2, 3, 4], [5, 4, 2], [3, 4, 5]];
   const numerals = ['一', '二', '三', '四', '五'];
@@ -53,20 +52,18 @@ function setupCounting() {
     skip.hidden = Boolean(round);
     help.hidden = !round;
     hear.hidden = hear.disabled = help.disabled = false;
-    answers.hidden = begin.hidden = replay.hidden = next.hidden = switchGame.hidden = true;
+    answers.hidden = begin.hidden = replay.hidden = next.hidden = true;
     status.textContent = countPrompt;
     showGardenSection(counting, title);
   }
 
-  function showReady(message, keepFlowers = false, finished = false) {
+  function showReady(message, keepFlowers = false) {
     stopFeedback();
     round = null;
     flowerBed.hidden = !keepFlowers;
     progress.hidden = answers.hidden = skip.hidden = help.hidden = next.hidden = true;
     hear.hidden = true;
     begin.hidden = replay.hidden = false;
-    switchGame.hidden = !finished;
-    begin.textContent = finished ? '再玩一局' : '开始练习';
     status.textContent = message;
     showGardenSection(counting, begin);
   }
@@ -129,15 +126,14 @@ function setupCounting() {
   hear.addEventListener('click', () => sayInGarden(answers.hidden ? countPrompt : totalPrompt));
   next.addEventListener('click', () => {
     questionIndex += 1;
-    if (questionIndex === round.length) showReady('三题都完成啦！', false, true);
+    if (questionIndex === round.length) returnToGames(true);
     else showQuestion(round[questionIndex]);
   });
-  function returnToGarden() {
+  function returnToGames(completed = false) {
     stopFeedback();
-    showGardenSection(home, entry);
+    showGameList(entry, completed);
   }
-  document.querySelector('#back-home').addEventListener('click', returnToGarden);
-  switchGame.addEventListener('click', returnToGarden);
+  document.querySelector('#count-back').addEventListener('click', () => returnToGames());
 
   for (const flower of flowers) {
     flower.addEventListener('click', () => {
@@ -163,9 +159,10 @@ function setupCounting() {
       }
       status.textContent = message;
       answers.hidden = help.hidden = hear.hidden = true;
-      next.textContent = questionIndex === round.length - 1 ? '看看结果' : '下一题';
+      next.textContent = questionIndex === round.length - 1 ? '回游戏列表' : '下一题';
       next.hidden = false;
       next.focus();
     });
   }
+  return stopFeedback;
 }

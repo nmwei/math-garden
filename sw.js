@@ -1,16 +1,17 @@
-const VERSION = '1.0.11+22d917d60f06';
+const VERSION = '1.0.27+7d8f4a273bc0';
 const scope = self.registration.scope;
 const prefix = `math-garden:app:${encodeURIComponent(scope)}:`;
 const cacheName = `${prefix}${VERSION}`;
 const homeUrl = new URL('index.html', scope).href;
 const files = [
-  'index.html', 'course.html', 'parent.html', 'manifest.webmanifest',
+  'index.html', 'manifest.webmanifest',
   'app/styles.css', 'app/shapes.css', 'app/patterns.css', 'app/course.css', 'app/parent.css',
   'app/main.js', 'app/counting.js', 'app/choice-game.js', 'app/shapes.js', 'app/patterns.js',
   'app/garden-ui.js', 'app/preferences.js', 'app/offline.js', 'app/shell.js', 'app/voice.js', 'app/parent.js',
-  'app/course.js', 'app/course-models.js', 'app/course-study.js', 'app/course-manipulatives.js',
+  'app/course.js', 'app/course-models.js', 'app/course-memory.js', 'app/course-study.js', 'app/course-manipulatives.js',
   'app/course-foundation.js', 'app/course-grade1.js', 'app/course-grade2.js', 'app/course-grade3.js',
   'app/course-bridge.js', 'app/course-extensions.js', 'app/course-variants.js',
+  'app/challenge-paths.js', 'app/course-challenge.js',
   'assets/icon.svg', 'assets/icon-180.png', 'assets/icon-192.png', 'assets/icon-512.png',
   'assets/garden-hero.svg', 'assets/count-flower.svg',
 ].map(path => new URL(path, scope).href);

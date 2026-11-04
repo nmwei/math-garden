@@ -1,12 +1,4 @@
-const courseStages = [foundation, gradeOne, gradeTwo, gradeThree];
-for (const { stage, after, lesson: addition } of [...bridgeLessons, ...courseExtensions]) {
-  const lessons = courseStages.find(group => group.id === stage).lessons;
-  const previous = lessons.findIndex(item => item.id === after);
-  lessons.splice(previous + 1, 0, addition);
-}
-const courseLessons = courseStages.flatMap(stage => stage.lessons);
 const courseRoot = document.querySelector('#course-root');
-const courseResults = new Map();
 let lesson;
 let step;
 let independent;
@@ -18,27 +10,11 @@ let practiceItems;
 let firstGap;
 let placementRetry;
 let retriedPlacement;
-
-function readResult(item) {
-  if (courseResults.has(item.id)) return courseResults.get(item.id);
-  try {
-    const result = JSON.parse(localStorage.getItem(`math-garden:course:${item.id}`));
-    if (result?.total === item.practice.length && Number.isInteger(result.independent)
-      && result.independent >= 0 && result.independent <= result.total) return result;
-  } catch {
-    // Practice stays available in browsers without local storage.
-  }
-  return null;
-}
+let returnToChallenge;
+let challengeTarget;
 
 function saveResult() {
-  const result = { independent, total: lesson.practice.length };
-  courseResults.set(lesson.id, result);
-  try {
-    localStorage.setItem(`math-garden:course:${lesson.id}`, JSON.stringify(result));
-  } catch {
-    // Keep the result for the current visit.
-  }
+  writeCourseMemory(`math-garden:course:${lesson.id}`, { independent, total: lesson.practice.length });
 }
 
 function stageOf(item) {
@@ -46,12 +22,12 @@ function stageOf(item) {
 }
 
 function lessonLink(item, text, primary = false) {
-  return `<a class="course-action${primary ? ' primary' : ''}" href="#lesson/${item.id}">${courseText(text)}</a>`;
+  return `<a class="course-action${primary ? ' primary' : ''}" href="#course/lesson/${item.id}">${courseText(text)}</a>`;
 }
 
 function reviewLink(item, text) {
   if (!makeReviewPractice(item.id, 1)) return lessonLink(item, text);
-  return `<a class="course-action" href="#review/${item.id}">${courseText(text)}</a>`;
+  return `<a class="course-action" href="#course/review/${item.id}">${courseText(text)}</a>`;
 }
 
 function lessonState(item) {
@@ -60,30 +36,20 @@ function lessonState(item) {
   return result.independent === result.total ? '已练 · 独立答对' : '已练 · 可复习';
 }
 
-function courseCard(item) {
-  return `<a class="course-lesson" href="#lesson/${item.id}" aria-label="${courseText(item.title)}">
-    <span class="course-card-state">${lessonState(item)}</span>
+function courseCard(item, isRecommended) {
+  return `<a class="course-lesson" href="#course/lesson/${item.id}" aria-label="${courseText(item.title)}"${isRecommended ? ' aria-describedby="course-recommendation"' : ''}>
+    <span class="course-card-meta">
+      <span class="course-card-state">${lessonState(item)}</span>
+      ${isRecommended ? '<span class="course-card-badge" id="course-recommendation">推荐</span>' : ''}
+    </span>
     <strong>${courseText(item.title)}</strong>
     <small>${courseText(item.goal)}</small>
   </a>`;
 }
 
 function renderMap(stageId) {
-  const selected = courseStages.find(stage => stage.id === stageId);
-  const pool = selected?.lessons ?? courseLessons;
-  const placement = readPlacement();
-  const startingPoint = pool.findIndex(item => item.id === placement);
-  const nextLesson = pool.slice(Math.max(0, startingPoint)).find(item => !readResult(item));
-  const revisit = pool.find(item => readResult(item)?.independent < item.practice.length);
-  const recommended = nextLesson ?? revisit ?? pool[0];
-  const recommendationLabel = recommended.id === placement ? '起点建议'
-    : selected ? '本阶段推荐' : placement ? '接下来可以学' : '推荐先学';
+  const { selected, recommended, revisit, due } = getStudyPlan(stageId);
   const active = selected ?? stageOf(recommended);
-  const today = localDateKey();
-  const due = courseLessons.filter(item => {
-    const record = readReviewRecord(item.id);
-    return record && record.reviewOn <= today;
-  }).slice(0, 3);
   const review = revisit && revisit !== recommended && !due.includes(revisit)
     ? reviewLink(revisit, `复习 · ${revisit.title}`) : '';
   courseRoot.innerHTML = `
@@ -91,32 +57,19 @@ function renderMap(stageId) {
       <div class="garden-page-heading"><p class="garden-page-kicker">数学小课堂</p><h1 tabindex="-1">数学学习地图</h1></div>
       <p class="garden-page-note"><span aria-hidden="true">✳</span> 按自己的节奏学</p>
     </header>
-    <section class="course-hero" aria-labelledby="course-hero-title">
-      <div>
-        <h2 class="garden-feature-title" id="course-hero-title">从会的地方出发</h2>
-        <p>先动手，再用图和数字说清楚。</p>
-        <p class="course-note">${recommendationLabel}：「${courseText(recommended.title)}」</p>
-        <div class="course-controls">
-          ${lessonLink(recommended, '开始推荐课', true)}
-          <a class="course-action" href="#start-check">${placement ? '再找一次起点' : '找找学习起点'}</a>
-          ${review}
-        </div>
-      </div>
-      <img src="./assets/garden-hero.svg" alt="" width="420" height="300">
-    </section>
-    ${due.length ? `<section class="course-panel course-due" aria-labelledby="due-title">
-      <h2 id="due-title">今日复习</h2><p>换一组题，再试试上次用过的办法。</p>
-      <div class="course-controls">${due.map(item => reviewLink(item, `复习 · ${item.title}`)).join('')}</div>
+    ${due.length || review ? `<section class="course-panel course-due" aria-labelledby="due-title">
+      <h2 id="due-title">${due.length ? '今日复习' : '可以再练'}</h2><p>换一组题，再试试上次用过的办法。</p>
+      <div class="course-controls">${due.map(item => reviewLink(item, `复习 · ${item.title}`)).join('')}${review}</div>
     </section>` : ''}
     <nav class="course-stages" aria-label="学习阶段">
-      ${courseStages.map(stage => `<a class="course-action" href="#${stage.id}"${stage === active ? ' aria-current="page"' : ''}>${stage.label}</a>`).join('')}
+      ${courseStages.map(stage => `<a class="course-action" href="#course/${stage.id}"${stage === active ? ' aria-current="page"' : ''}>${stage.label}</a>`).join('')}
     </nav>
     <section class="course-panel" aria-labelledby="stage-title">
       <div class="course-top">
         <div><h2 id="stage-title">${courseText(active.title)}</h2><p>${courseText(active.description)}</p></div>
         <span class="course-note">已练 ${active.lessons.filter(item => readResult(item)).length} / ${active.lessons.length} 课</span>
       </div>
-      <div class="course-lessons">${active.lessons.map(courseCard).join('')}</div>
+      <div class="course-lessons">${active.lessons.map(item => courseCard(item, item === recommended)).join('')}</div>
       ${renderHomeActivity(active)}
     </section>`;
 }
@@ -134,10 +87,15 @@ courseRoot.addEventListener('toggle', ({ target }) => {
 }, true);
 
 function wrapLesson(content) {
+  gardenVoice.stop();
   const stage = lesson ? stageOf(lesson) : null;
+  const inChallenge = mode === 'challenge';
+  let back = `<a class="course-action" href="${stage ? `#course/${stage.id}` : '#course'}">回学习地图</a>`;
+  if (challengeTarget) back = '<a class="course-action" href="#parent/records">返回闯关记录</a>';
+  else if (inChallenge || returnToChallenge) back = '<a class="course-action" href="./">回花园闯关</a>';
   courseRoot.innerHTML = `<div class="course-top">
-    <a class="course-action" href="#${stage?.id ?? ''}">回学习地图</a>
-    <span class="course-kicker">${stage?.label ?? '找起点'}</span>
+    ${back}
+    <span class="course-kicker">${stage?.label ?? (inChallenge ? '花园闯关' : '找起点')}</span>
   </div><section class="course-panel course-done">${content}</section>`;
   courseRoot.querySelector('h1').focus();
 }
@@ -147,7 +105,7 @@ function renderExample() {
   wrapLesson(`<p class="course-kicker">先看一个例子</p>
     <h1 tabindex="-1">${courseText(title)}</h1><p>${courseText(goal)}</p>
     <div class="course-model">${renderCourseModel(example.model)}</div>
-    <p class="course-prompt">${courseText(example.text)}</p>
+    ${renderCourseReadout(example.text, '听例子')}
     <button type="button" class="primary course-action" data-action="start">开始练习</button>`);
 }
 
@@ -165,19 +123,54 @@ function renderInput(item) {
   </form>`;
 }
 
+function courseSpeechText(text) {
+  const words = {
+    '+': '加', '＋': '加', '−': '减', '-': '减', '－': '减', '×': '乘', '÷': '除以',
+    '=': '等于', '＝': '等于', '>': '大于', '＞': '大于', '<': '小于', '＜': '小于',
+    '□': '空格', '～': '到', '↑': '朝上', '↓': '朝下', '←': '朝左', '→': '朝右',
+    '↖': '朝左上', '↗': '朝右上', '↘': '朝右下', '↙': '朝左下', '○': '圆形', '│': '，镜线，',
+  };
+  return text.replace(/(\d+)\s*\/\s*(\d+)/g, '$2分之$1')
+    .replace(/(\d)\s*→\s*(?=\d)/g, '$1，')
+    .replace(/(\d{1,2}):(\d{2})/g, (_, hour, minute) => `${hour}点${minute === '00' ? '整' : `${Number(minute)}分`}`)
+    .replace(/[+＋−－×÷=＝>＞<＜□～↑↓←→↖↗↘↙○│-]/g, symbol => words[symbol]);
+}
+
+function renderCourseReadout(text, label, spoken = text) {
+  return `<div class="course-readout">
+    <div class="course-readout-line"><p class="course-prompt">${courseText(text)}</p>
+      <button type="button" class="course-action practice-hear" data-action="hear" data-speech="${courseText(courseSpeechText(spoken))}">${label}</button>
+    </div>
+    <span class="course-speech-status course-note" aria-live="polite"></span>
+  </div>`;
+}
+
+function renderQuestionBody(item) {
+  options = shuffleOptions(item.choices ?? []);
+  const modelText = item.model?.kind === 'text' && !item.model.text.includes('├') ? item.model.text : '';
+  const spoken = modelText ? `${modelText}。${item.prompt}` : item.prompt;
+  return `${renderCourseReadout(item.prompt, '听题目', spoken)}
+    <div class="course-model">${item.bundles ? renderBundleTray(item.bundles.ones) : renderCourseModel(item.model, true)}</div>
+    <div class="course-controls">${renderInput(item)}</div>`;
+}
+
+const courseFeedbackFlower = '<img class="course-feedback-flower" src="./assets/count-flower.svg" alt="" width="28" height="28">';
+
+function renderCourseFeedback(message, kind, showFlower = true) {
+  const flower = kind === 'correct' && showFlower ? courseFeedbackFlower : '';
+  return `<span class="course-feedback course-feedback-${kind}">${flower}${courseText(message)}</span>`;
+}
+
 function renderPractice() {
   const placing = mode === 'placement';
   const retry = placing && placementRetry;
   const item = retry ? practiceItems[step].retry : practiceItems[step];
-  options = shuffleOptions(item.choices ?? []);
   usedHelp = answered = false;
   wrapLesson(`<p class="course-progress">第 ${step + 1} / ${practiceItems.length} 题${retry ? ' · 换一题再试' : ''}</p>
     <h1 tabindex="-1">${placing ? '找找学习起点' : courseText(lesson.title)}</h1>
-    <p class="course-prompt">${courseText(item.prompt)}</p>
-    <div class="course-model">${item.bundles ? renderBundleTray(item.bundles.ones) : renderCourseModel(item.model, true)}</div>
-    <div class="course-controls">${renderInput(item)}</div>
+    ${renderQuestionBody(item)}
     ${placing ? '<button type="button" class="course-action" data-action="unsure">还不确定</button>' : `
-    <p class="course-status" role="status"></p>
+    <p id="course-answer-status" class="course-status" role="status"></p>
     <p class="course-note" id="course-hint" hidden>${courseText(item.hint)}</p>
     <div class="course-controls">
       <button type="button" class="course-action" data-action="hint" aria-controls="course-hint" aria-expanded="false">看提示</button>
@@ -187,6 +180,10 @@ function renderPractice() {
 }
 
 function checkAnswer(value, attempted) {
+  if (mode === 'challenge') {
+    courseChallenge.answer(value);
+    return;
+  }
   if (answered) return;
   const item = practiceItems[step];
   if (mode === 'placement') {
@@ -208,14 +205,21 @@ function checkAnswer(value, attempted) {
   showRetryChoice(buttons, value !== item.answer ? attempted : undefined);
   if (value !== item.answer) {
     usedHelp = true;
-    status.textContent = '再试一次，也可以看一个提示。';
+    status.innerHTML = renderCourseFeedback('再试一次，也可以看一个提示。', 'retry');
     return;
   }
 
   answered = true;
+  gardenVoice.stop();
   if (!usedHelp) independent += 1;
-  status.textContent = item.explanation;
-  status.classList.add('course-correct');
+  const correctChoice = attempted?.hasAttribute('data-option');
+  if (correctChoice) {
+    attempted.classList.add('is-correct');
+    attempted.setAttribute('aria-describedby', 'course-answer-status');
+    attempted.insertAdjacentHTML('beforeend', `<span class="course-choice-check" aria-hidden="true">✓</span>${courseFeedbackFlower}`);
+  }
+  status.innerHTML = `${renderCourseFeedback('答对啦！', 'correct', !correctChoice)}
+    <span class="course-explanation">${courseText(item.explanation)}</span>`;
   for (const control of courseRoot.querySelectorAll('[data-option], [data-line-value], [data-plot], [data-dot], [data-action="check-build"], .course-input, [type="submit"]')) {
     control.disabled = true;
   }
@@ -230,12 +234,14 @@ function renderResult() {
   if (mode === 'study') saveResult();
   scheduleCourseReview(lesson.id, independent === practiceItems.length);
   const nextLesson = courseLessons[courseLessons.indexOf(lesson) + 1];
+  const retryRoute = returnToChallenge && `${returnToChallenge.id}${challengeTarget ? `/${challengeTarget.id}` : ''}`;
   wrapLesson(`<p class="course-kicker">又长大了一点</p><h1 tabindex="-1">${mode === 'review' ? '这次复习完成啦' : '这一课练完啦'}</h1>
     <p class="course-prompt">本次首次独立答对 ${independent} / ${practiceItems.length} 题</p>
     <p>${independent === practiceItems.length ? '你用自己的办法把这组做完了。' : '用提示找到办法也是在学习。想试试时，可以再练一遍。'}</p>
     <div class="course-controls">
       <button type="button" class="course-action" data-action="start">再练一次</button>
-      ${nextLesson ? lessonLink(nextLesson, '去下一课', true) : ''}
+      ${retryRoute ? `<a class="primary course-action" href="#course/challenge/${retryRoute}">回闯关再试</a>`
+        : nextLesson ? lessonLink(nextLesson, '去下一课', true) : ''}
     </div>
     ${renderHomeActivity(stageOf(lesson), lesson)}`);
 }
@@ -272,10 +278,20 @@ courseRoot.addEventListener('click', event => {
     button.setAttribute('aria-pressed', String(button.getAttribute('aria-pressed') !== 'true'));
   } else {
     switch (button.dataset.action) {
+      case 'hear': {
+        const status = button.closest('.course-readout').querySelector('.course-speech-status');
+        const onError = () => { status.textContent = '这次没有读出来，可以再点一次。'; };
+        status.textContent = '';
+        if (!gardenVoice.speak(button.dataset.speech, { onError })) onError();
+        break;
+      }
       case 'start':
         if (mode === 'review') practiceItems = makeReviewPractice(lesson.id, readReviewRecord(lesson.id)?.variant ?? 1);
         step = independent = 0;
         renderPractice();
+        break;
+      case 'challenge-next':
+        courseChallenge.next();
         break;
       case 'unsure':
         checkAnswer();
@@ -312,11 +328,19 @@ courseRoot.addEventListener('submit', event => {
   if (answer.checkValidity()) checkAnswer(Number(answer.value));
 });
 
-function openCourseRoute() {
-  const route = location.hash.slice(1);
-  const [routeType, id] = route.split('/');
-  lesson = ['lesson', 'review'].includes(routeType) ? courseLessons.find(item => item.id === id) : null;
-  if (route === 'start-check') {
+function openCourseRoute(route) {
+  const [routeType, id, context, skillId] = route.split('/');
+  const challengePath = challengePaths.find(path => path.id === id);
+  const selectedSkill = challengePath?.skills.find(skill => skill.id === context);
+  lesson = ['lesson', 'practice', 'review'].includes(routeType) ? courseLessons.find(item => item.id === id) : null;
+  returnToChallenge = lesson && challengePaths.find(path => path.id === context);
+  const inChallenge = routeType === 'challenge' && challengePath && (!context || selectedSkill);
+  challengeTarget = inChallenge ? selectedSkill : returnToChallenge?.skills.find(skill => skill.id === skillId && skill.lesson === lesson.id);
+  gardenShell.select(inChallenge || returnToChallenge ? 'home' : 'course');
+  if (inChallenge) {
+    mode = 'challenge';
+    courseChallenge.start(challengePath, selectedSkill);
+  } else if (route === 'start-check') {
     mode = 'placement';
     practiceItems = placementActivities;
     firstGap = null;
@@ -326,15 +350,13 @@ function openCourseRoute() {
     const reviewItems = routeType === 'review' ? makeReviewPractice(lesson.id, readReviewRecord(lesson.id)?.variant ?? 1) : null;
     mode = reviewItems ? 'review' : 'study';
     practiceItems = reviewItems ?? lesson.practice;
-    if (mode === 'review') {
+    if (mode === 'review' || routeType === 'practice') {
       step = independent = 0;
       renderPractice();
     } else renderExample();
   } else {
+    mode = 'map';
     renderMap(route);
     courseRoot.querySelector('h1').focus();
   }
 }
-
-window.addEventListener('hashchange', openCourseRoute);
-openCourseRoute();

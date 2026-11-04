@@ -89,7 +89,6 @@ button:disabled { cursor: default; }
   gap: 1rem;
   margin-bottom: clamp(1rem, 2.3vw, 1.6rem);
 }
-.garden-page-header h1, .game-shelf-header h2 { margin: .25rem 0 0; }
 .garden-page-kicker, .garden-page-note { margin: 0; color: var(--muted); font-size: .9rem; }
 .garden-page-kicker { font-weight: 750; letter-spacing: .12em; }
 .garden-page-heading .garden-page-kicker {
@@ -114,15 +113,18 @@ button:disabled { cursor: default; }
 }
 .garden-page-note { white-space: nowrap; }
 .garden-page-note span { margin-inline-end: .3rem; color: var(--leaf); }
-.welcome {
+.today-card {
+  --today-radius: 24px;
+  position: relative;
   display: grid;
-  grid-template-columns: 1fr 40%;
+  grid-template-columns: minmax(0, 1fr) min(30%, 264px);
   align-items: center;
-  gap: clamp(.5rem, 4vw, 2.5rem);
-  margin-bottom: 1.25rem;
-  padding: clamp(1.25rem, 4vw, 2.75rem);
+  gap: clamp(.75rem, 3vw, 1.75rem);
+  margin-bottom: .75rem;
+  min-height: clamp(10.75rem, 16vw, 12rem);
+  padding: clamp(1rem, 3vw, 1.65rem);
   border: 1px solid #d9dfc9;
-  border-radius: 24px;
+  border-radius: var(--today-radius);
   background: #ebefdf;
 }
 .garden-feature-title { margin: 0; font-size: clamp(1.25rem, 2.35vw, 1.625rem); line-height: 1.3; }
@@ -132,14 +134,40 @@ h1 {
   letter-spacing: .04em;
   line-height: 1.2;
 }
-.welcome-copy { margin: .8rem 0 0; color: var(--muted); }
-.welcome-art {
+.today-card h2 { margin: 0; color: var(--muted); font-size: .95rem; }
+#today-lesson { margin: .25rem 0; font-size: clamp(1.2rem, 2.5vw, 1.6rem); font-weight: 700; }
+#today-detail { margin: 0; color: var(--muted); }
+.today-action {
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  min-height: 44px;
+  margin-top: .2rem;
+  color: #345c49;
+  font-weight: 700;
+  text-decoration: none;
+}
+.today-action svg { width: 1.1rem; height: 1.1rem; flex: none; }
+.today-action::after { content: ''; position: absolute; inset: 0; border-radius: var(--today-radius); }
+.today-action:active { filter: none; }
+.today-card:active { background: #e5ebd8; }
+.today-action:focus-visible { outline: none; }
+.today-action:focus-visible::after { outline: 3px solid #a47935; outline-offset: 4px; }
+@media (hover: hover) {
+  .today-card:hover { border-color: #9cae91; }
+  .today-card:hover .today-action-label { text-decoration: underline; text-underline-offset: .2em; }
+}
+.garden-text-link { display: inline-flex; align-items: center; gap: .4em; min-height: 44px; color: var(--leaf); font-weight: 650; }
+.today-art {
   display: block;
-  width: min(100%, 355px);
+  width: 100%;
   height: auto;
+  aspect-ratio: 7 / 4;
+  object-fit: cover;
   justify-self: end;
 }
 .game-shelf { padding: clamp(.85rem, 2.6vw, 1.65rem); border: 1px solid var(--border); border-radius: 24px; background: #f1f1e6; }
+#game-list-status { margin: 0 0 .8rem; color: var(--leaf); font-weight: 700; }
 .activities { display: grid; gap: 14px; }
 .activity {
   display: grid;
@@ -199,8 +227,8 @@ h1 {
   font-size: 1rem;
 }
 .secondary { font-size: .95rem; }
-.game-hear svg { vertical-align: -.2em; margin-inline-end: .25rem; }
-.practice-muted .game-hear { display: none; }
+.practice-hear svg { vertical-align: -.2em; margin-inline-end: .25rem; }
+.practice-muted .practice-hear { display: none; }
 .choices button.is-retry {
   background: #f8ecdc;
   border-color: #9a6b39;
@@ -237,6 +265,8 @@ h1 {
   .activity-art { width: clamp(48px, 5.8vw, 68px); }
 }
 @media (max-width: 680px) {
+  .today-card { grid-template-columns: minmax(0, 1fr); min-height: 0; }
+  .today-art { display: none; }
   .garden-bar { flex-wrap: wrap; }
   .garden-nav { order: 1; flex: 0 0 100%; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .garden-nav a { justify-content: center; padding-inline: .2rem; font-size: clamp(.73rem, 3.4vw, .9rem); gap: .27rem; }
@@ -244,7 +274,6 @@ h1 {
   .garden-page-note { display: none; }
 }
 @media (max-width: 480px) {
-  .welcome { grid-template-columns: minmax(0, 1fr) 30%; }
   h1 { font-size: clamp(1.45rem, 6vw, 2rem); }
 }
 
@@ -267,7 +296,6 @@ h1 {
   align-items: center;
   gap: .65rem;
   min-height: 44px;
-  margin-top: .8rem;
   padding: .5rem 1rem;
   border-radius: .85rem;
   font-weight: 700;
@@ -304,3 +332,47 @@ h1 {
   z-index: -1;
 }
 .parent-hold.holding::before { transform: scaleX(1); transition: transform 1s linear; }
+
+.challenge-hub { margin-top: 1.5rem; }
+.challenge-hub h2 { margin: 0 0 .2rem; font-size: clamp(1.2rem, 2.4vw, 1.5rem); }
+.challenge-hub > p { margin: 0 0 .85rem; color: var(--muted); }
+.challenge-paths {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 215px), 1fr));
+  gap: .85rem;
+}
+.challenge-path {
+  display: flex;
+  flex-direction: column;
+  gap: .55rem;
+  padding: clamp(.95rem, 2.2vw, 1.35rem);
+  border: 1px solid #d3ddc6;
+  border-radius: 24px;
+  background: #edf1e3;
+}
+.challenge-path:nth-child(2) { border-color: #e9dcc2; background: #f4ecdb; }
+.challenge-path:nth-child(3) { border-color: #e2daec; background: #eeebf3; }
+.challenge-path-top, .challenge-path-actions {
+  display: flex;
+  align-items: center;
+  gap: .45rem .65rem;
+  flex-wrap: wrap;
+}
+.challenge-path-top { justify-content: space-between; }
+.challenge-path h3, .challenge-path p { margin: 0; }
+.challenge-path-mark { color: var(--leaf); font-size: 1.35rem; font-weight: 750; }
+.challenge-path > p { color: var(--muted); }
+.challenge-path-progress { display: grid; gap: .2rem; margin-top: auto; font-size: .82rem; color: var(--muted); }
+.challenge-path-progress progress { width: 100%; height: .65rem; accent-color: var(--leaf); }
+.challenge-path p.challenge-path-next { color: inherit; font-size: .9rem; font-weight: 700; }
+.challenge-path-actions { margin-top: .2rem; }
+.challenge-results { list-style: none; margin: .35rem auto .85rem; padding: 0; text-align: start; }
+.challenge-results li {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: .5rem;
+  padding: .45rem 0;
+  border-bottom: 1px solid var(--border);
+}
+.challenge-results strong { flex-shrink: 0; color: var(--leaf); font-size: .82rem; }

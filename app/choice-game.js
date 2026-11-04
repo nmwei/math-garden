@@ -12,7 +12,6 @@ function setupChoiceGames() {
   const replay = document.querySelector('#choice-replay');
   const begin = document.querySelector('#choice-begin');
   const next = document.querySelector('#choice-next');
-  const switchGame = document.querySelector('#choice-switch');
   const games = [
     { id: 'shapes', game: shapeGame, entry: document.querySelector('#start-shapes'), played: 0 },
     { id: 'patterns', game: patternGame, entry: document.querySelector('#start-patterns'), played: 0 },
@@ -35,19 +34,17 @@ function setupChoiceGames() {
     skip.hidden = Boolean(round);
     progress.hidden = !round;
     if (round) progress.textContent = `第 ${index + 1} / ${round.length} 题`;
-    begin.hidden = replay.hidden = next.hidden = switchGame.hidden = true;
+    begin.hidden = replay.hidden = next.hidden = true;
     status.textContent = active.game.instruction;
     showGardenSection(section, title);
   }
 
-  function showReady(message, keepBoard = false, finished = false) {
+  function showReady(message, keepBoard = false) {
     stopGardenSpeech();
     round = null;
     board.hidden = !keepBoard;
     options.hidden = help.hidden = hear.hidden = skip.hidden = progress.hidden = next.hidden = true;
     begin.hidden = replay.hidden = false;
-    switchGame.hidden = !finished;
-    begin.textContent = finished ? '再玩一局' : '开始练习';
     status.textContent = message;
     showGardenSection(section, begin);
   }
@@ -87,15 +84,14 @@ function setupChoiceGames() {
   });
   next.addEventListener('click', () => {
     index += 1;
-    if (index === round.length) showReady('三题都完成啦！', false, true);
+    if (index === round.length) returnToGames(true);
     else showQuestion(round[index]);
   });
-  function returnToGarden() {
+  function returnToGames(completed = false) {
     stopGardenSpeech();
-    showGardenSection(home, active.entry);
+    showGameList(active.entry, completed);
   }
-  document.querySelector('#choice-back').addEventListener('click', returnToGarden);
-  switchGame.addEventListener('click', returnToGarden);
+  document.querySelector('#choice-back').addEventListener('click', () => returnToGames());
   buttons.forEach((button, selected) => {
     button.addEventListener('click', () => {
       if (selected !== question.answer) {
@@ -112,7 +108,7 @@ function setupChoiceGames() {
       }
       status.textContent = active.game.success;
       options.hidden = help.hidden = hear.hidden = true;
-      next.textContent = index === round.length - 1 ? '看看结果' : '下一题';
+      next.textContent = index === round.length - 1 ? '回游戏列表' : '下一题';
       next.hidden = false;
       next.focus();
     });

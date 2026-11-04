@@ -1,3 +1,11 @@
+const courseStages = [foundation, gradeOne, gradeTwo, gradeThree];
+for (const { stage, after, lesson: addition } of [...bridgeLessons, ...courseExtensions]) {
+  const lessons = courseStages.find(group => group.id === stage).lessons;
+  const previous = lessons.findIndex(item => item.id === after);
+  lessons.splice(previous + 1, 0, addition);
+}
+const courseLessons = courseStages.flatMap(stage => stage.lessons);
+
 const placementActivities = [
   {
     nextLesson: 'count-total',
@@ -105,24 +113,26 @@ function dailyHomeActivity(stage, date = new Date()) {
   return order[day - cycle * deck.length];
 }
 
-const courseMemory = new Map();
-
-function readCourseMemory(key) {
-  if (courseMemory.has(key)) return courseMemory.get(key);
-  try {
-    return JSON.parse(localStorage.getItem(key));
-  } catch {
-    return null;
-  }
+function readResult(item) {
+  const result = readCourseMemory(`math-garden:course:${item.id}`);
+  if (result?.total === item.practice.length && Number.isInteger(result.independent)
+    && result.independent >= 0 && result.independent <= result.total) return result;
+  return null;
 }
 
-function writeCourseMemory(key, value) {
-  courseMemory.set(key, value);
-  try {
-    localStorage.setItem(key, JSON.stringify(value));
-  } catch {
-    // Keep the value for the current visit.
-  }
+function getStudyPlan(stageId) {
+  const selected = courseStages.find(stage => stage.id === stageId);
+  const pool = selected?.lessons ?? courseLessons;
+  const placement = readPlacement();
+  const startingPoint = pool.findIndex(item => item.id === placement);
+  const nextLesson = pool.slice(Math.max(0, startingPoint)).find(item => !readResult(item));
+  const revisit = pool.find(item => readResult(item)?.independent < item.practice.length);
+  const today = localDateKey();
+  const due = courseLessons.filter(item => {
+    const record = readReviewRecord(item.id);
+    return record && record.reviewOn <= today && makeReviewPractice(item.id, record.variant);
+  }).slice(0, 3);
+  return { selected, placement, recommended: nextLesson ?? revisit ?? pool[0], revisit, due };
 }
 
 const placementKey = 'math-garden:placement:v1';

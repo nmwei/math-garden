@@ -11,6 +11,8 @@
   <link rel="stylesheet" href="./app/styles.css">
   <link rel="stylesheet" href="./app/shapes.css">
   <link rel="stylesheet" href="./app/patterns.css">
+  <link rel="stylesheet" href="./app/course.css">
+  <link rel="stylesheet" href="./app/parent.css">
   <script src="./app/shapes.js" defer></script>
   <script src="./app/patterns.js" defer></script>
   <script src="./app/choice-game.js" defer></script>
@@ -20,68 +22,98 @@
   <script src="./app/shell.js" defer></script>
   <script src="./app/offline.js" defer></script>
   <script src="./app/garden-ui.js" defer></script>
+  <script src="./app/course-models.js" defer></script>
+  <script src="./app/course-foundation.js" defer></script>
+  <script src="./app/course-grade1.js" defer></script>
+  <script src="./app/course-grade2.js" defer></script>
+  <script src="./app/course-grade3.js" defer></script>
+  <script src="./app/course-bridge.js" defer></script>
+  <script src="./app/course-extensions.js" defer></script>
+  <script src="./app/course-variants.js" defer></script>
+  <script src="./app/course-memory.js" defer></script>
+  <script src="./app/course-study.js" defer></script>
+  <script src="./app/course-manipulatives.js" defer></script>
+  <script src="./app/challenge-paths.js" defer></script>
+  <script src="./app/course-challenge.js" defer></script>
+  <script src="./app/course.js" defer></script>
+  <script src="./app/parent.js" defer></script>
   <script src="./app/main.js" defer></script>
 </head>
 <body>
-  <header class="garden-bar" data-garden-page="home"></header>
+  <header class="garden-bar"></header>
   <main class="garden">
     <section id="home" aria-labelledby="home-title">
       <header class="garden-page-header">
-        <div class="garden-page-heading"><p class="garden-page-kicker">花园日常</p><h1 id="home-title" tabindex="-1">今天，也来玩数学。</h1></div>
+        <div class="garden-page-heading"><p class="garden-page-kicker">从会的地方出发</p><h1 id="home-title" tabindex="-1">花园闯关</h1></div>
         <p class="garden-page-note"><span aria-hidden="true">✳</span> 从一个小发现开始</p>
       </header>
-      <section class="welcome" aria-labelledby="welcome-title">
+      <section class="today-card" aria-labelledby="today-title">
         <div>
-          <h2 class="garden-feature-title" id="welcome-title">从一朵花开始，<br>发现数学的办法。</h2>
-          <p class="welcome-copy">先动动手，再用图和数字说清楚。</p>
-          <a class="garden-course-link primary" href="./course.html" aria-label="开始学数学">开始学数学 <span aria-hidden="true">→</span></a>
+          <h2 id="today-title">今天学什么</h2>
+          <p id="today-lesson">看见几朵花</p>
+          <p id="today-detail">从 1～3 朵开始，把花的数量和数字连起来。</p>
+          <a class="today-action" id="today-start" href="#course/practice/notice-small" aria-describedby="today-lesson today-detail">
+            <span class="today-action-label">试一节</span>
+            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 12h15m-6-6 6 6-6 6"/>
+            </svg>
+          </a>
         </div>
-        <img class="welcome-art" src="./assets/garden-hero.svg" alt="" width="420" height="300">
+        <img class="today-art" src="./assets/garden-hero.svg" alt="" width="420" height="300">
       </section>
-      <section class="game-shelf" id="games" aria-labelledby="games-title">
-        <div class="game-shelf-header">
-          <div class="garden-page-heading"><p class="garden-page-kicker">小游戏架</p><h2 id="games-title" tabindex="-1">数学游戏</h2></div>
-        </div>
-        <div class="activities">
-          <button id="start-counting" class="activity" type="button" aria-labelledby="count-name" aria-describedby="count-copy">
-            <span class="activity-copy">
-              <strong id="count-name">数一数</strong>
-              <small id="count-copy">点点花朵，看看一共有几朵。</small>
-              <span class="activity-action" aria-hidden="true">去数花朵 →</span>
-            </span>
-            <span class="activity-art activity-numbers" aria-hidden="true">123</span>
-          </button>
-          <button id="start-shapes" class="activity" type="button" aria-labelledby="shapes-name" aria-describedby="shapes-copy">
-            <span class="activity-copy">
-              <strong id="shapes-name">图形找朋友</strong>
-              <small id="shapes-copy">给圆形、三角形和正方形找座位。</small>
-              <span class="activity-action" aria-hidden="true">去找图形 →</span>
-            </span>
-            <svg class="activity-art" aria-hidden="true" viewBox="0 0 76 62">
-              <circle cx="25" cy="22" r="14" fill="#d9a484"/>
-              <path d="m45 8 20 34H25Z" fill="#e5bd6d" stroke="#f6efdc" stroke-width="2"/>
-              <rect x="45" y="32" width="23" height="23" rx="3" fill="#9fac86" stroke="#f6efdc" stroke-width="2"/>
-            </svg>
-          </button>
-          <button id="start-patterns" class="activity" type="button" aria-labelledby="patterns-name" aria-describedby="patterns-copy">
-            <span class="activity-copy">
-              <strong id="patterns-name">接着排一排</strong>
-              <small id="patterns-copy">顺着花叶小路，找找下一格。</small>
-              <span class="activity-action" aria-hidden="true">去排小路 →</span>
-            </span>
-            <svg class="activity-art" aria-hidden="true" viewBox="0 0 76 62">
-              <path d="M28 45C25 23 34 13 57 13c0 20-10 33-29 32Z" fill="#93aa84"/>
-              <path d="M29 44C15 45 7 36 8 24c15-2 23 7 21 20Z" fill="#b6c5a1"/>
-              <path d="M27 53c2-12 10-21 20-29" fill="none" stroke="#54785c" stroke-width="2.5" stroke-linecap="round"/>
-              <circle cx="63" cy="46" r="5" fill="#d8a1ab"/>
-            </svg>
-          </button>
-        </div>
+      <section class="challenge-hub" aria-labelledby="challenge-title">
+        <h2 id="challenge-title">选一条小路</h2>
+        <p>每关最多 4 个小挑战，想走哪条都可以。</p>
+        <div class="challenge-paths" id="challenge-paths"></div>
       </section>
     </section>
 
+    <section class="course-main" id="course-root" aria-label="数学学习地图" hidden></section>
+
+    <section class="game-shelf" id="games" aria-labelledby="games-title" hidden>
+      <div class="game-shelf-header">
+        <div class="garden-page-heading"><p class="garden-page-kicker">小游戏架</p><h1 id="games-title" tabindex="-1">数学游戏</h1></div>
+      </div>
+      <p id="game-list-status" role="status" hidden></p>
+      <div class="activities">
+        <button id="start-counting" class="activity" type="button" aria-labelledby="count-name" aria-describedby="count-copy">
+          <span class="activity-copy">
+            <strong id="count-name">数一数</strong>
+            <small id="count-copy">点点花朵，看看一共有几朵。</small>
+            <span class="activity-action" aria-hidden="true">去数花朵 →</span>
+          </span>
+          <span class="activity-art activity-numbers" aria-hidden="true">123</span>
+        </button>
+        <button id="start-shapes" class="activity" type="button" aria-labelledby="shapes-name" aria-describedby="shapes-copy">
+          <span class="activity-copy">
+            <strong id="shapes-name">图形找朋友</strong>
+            <small id="shapes-copy">给圆形、三角形和正方形找座位。</small>
+            <span class="activity-action" aria-hidden="true">去找图形 →</span>
+          </span>
+          <svg class="activity-art" aria-hidden="true" viewBox="0 0 76 62">
+            <circle cx="25" cy="22" r="14" fill="#d9a484"/>
+            <path d="m45 8 20 34H25Z" fill="#e5bd6d" stroke="#f6efdc" stroke-width="2"/>
+            <rect x="45" y="32" width="23" height="23" rx="3" fill="#9fac86" stroke="#f6efdc" stroke-width="2"/>
+          </svg>
+        </button>
+        <button id="start-patterns" class="activity" type="button" aria-labelledby="patterns-name" aria-describedby="patterns-copy">
+          <span class="activity-copy">
+            <strong id="patterns-name">接着排一排</strong>
+            <small id="patterns-copy">顺着花叶小路，找找下一格。</small>
+            <span class="activity-action" aria-hidden="true">去排小路 →</span>
+          </span>
+          <svg class="activity-art" aria-hidden="true" viewBox="0 0 76 62">
+            <path d="M28 45C25 23 34 13 57 13c0 20-10 33-29 32Z" fill="#93aa84"/>
+            <path d="M29 44C15 45 7 36 8 24c15-2 23 7 21 20Z" fill="#b6c5a1"/>
+            <path d="M27 53c2-12 10-21 20-29" fill="none" stroke="#54785c" stroke-width="2.5" stroke-linecap="round"/>
+            <circle cx="63" cy="46" r="5" fill="#d8a1ab"/>
+          </svg>
+        </button>
+      </div>
+    </section>
+
     <section id="counting" aria-labelledby="counting-title" hidden>
-      <button id="back-home" class="secondary" type="button"><span aria-hidden="true">←</span> 回花园</button>
+      <button id="count-back" class="secondary" type="button"><span aria-hidden="true">←</span> 退出游戏</button>
       <div class="demo">
         <h1 id="counting-title" tabindex="-1">数一数</h1>
         <p class="game-progress" hidden></p>
@@ -98,7 +130,7 @@
           <button type="button">3</button>
           <button type="button">4</button>
         </div>
-        <button id="count-hear" class="secondary game-hear" type="button" hidden>
+        <button id="count-hear" class="secondary practice-hear" type="button" hidden>
           <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
             <path d="M3 9h4l5-4v14l-5-4H3zM16 9a4 4 0 0 1 0 6m2-9a8 8 0 0 1 0 12"/>
           </svg>
@@ -106,14 +138,13 @@
         </button>
         <button id="help-counting" class="secondary" type="button" hidden>帮帮我</button>
         <button id="begin-counting" class="primary" type="button" hidden>开始练习</button>
-        <button id="count-switch" class="secondary" type="button" hidden>换个游戏</button>
         <button id="next-counting" class="primary" type="button" hidden>下一题</button>
         <button id="skip-demo" class="secondary" type="button">跳过示范</button>
         <button id="replay-demo" class="secondary" type="button" hidden>再看示范</button>
       </div>
     </section>
     <section id="choice-game" aria-labelledby="choice-title" hidden>
-      <button id="choice-back" class="secondary" type="button"><span aria-hidden="true">←</span> 回花园</button>
+      <button id="choice-back" class="secondary" type="button"><span aria-hidden="true">←</span> 退出游戏</button>
       <div class="demo">
         <h1 id="choice-title" tabindex="-1"></h1>
         <p class="game-progress" hidden></p>
@@ -124,7 +155,7 @@
           <button type="button"></button>
           <button type="button"></button>
         </div>
-        <button id="choice-hear" class="secondary game-hear" type="button" hidden>
+        <button id="choice-hear" class="secondary practice-hear" type="button" hidden>
           <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
             <path d="M3 9h4l5-4v14l-5-4H3zM16 9a4 4 0 0 1 0 6m2-9a8 8 0 0 1 0 12"/>
           </svg>
@@ -133,11 +164,83 @@
         <button id="choice-help" class="secondary" type="button">帮帮我</button>
         <button id="choice-skip" class="secondary" type="button">跳过示范</button>
         <button id="choice-begin" class="primary" type="button" hidden>开始练习</button>
-        <button id="choice-switch" class="secondary" type="button" hidden>换个游戏</button>
         <button id="choice-next" class="primary" type="button" hidden>下一题</button>
         <button id="choice-replay" class="secondary" type="button" hidden>再看示范</button>
       </div>
     </section>
+
+    <section class="parent-main" id="parent-settings" aria-labelledby="parent-title" hidden>
+      <header class="garden-page-header">
+        <div class="garden-page-heading">
+          <p class="garden-page-kicker">家长小角</p>
+          <h1 id="parent-title" tabindex="-1">家长中心</h1>
+        </div>
+        <p class="garden-page-note"><span aria-hidden="true">✳</span> 陪孩子慢慢学</p>
+      </header>
+      <div class="parent-panels">
+        <section class="parent-panel parent-voice" aria-labelledby="voice-title">
+          <h2 id="voice-title">设备声音</h2>
+          <p>开启后可听题、报数和试听。关闭后会隐藏听题与试听按钮，仍可看图和文字继续练习。</p>
+          <button id="parent-sound" type="button" aria-pressed="true">练习声音 <span aria-hidden="true">开</span></button>
+          <label for="parent-voice-select">普通话声音</label>
+          <div class="parent-actions">
+            <select id="parent-voice-select" aria-describedby="voice-support">
+              <option value="">自动选择普通话声音</option>
+            </select>
+            <button id="preview-voice" type="button">试听声音</button>
+          </div>
+          <p class="parent-note" id="voice-support">自动选择会优先使用本地声音。联网声音播放失败时，会尝试设备上的本地普通话。</p>
+          <p class="parent-status" id="voice-status" role="status"></p>
+        </section>
+        <section class="parent-panel" aria-labelledby="offline-title">
+          <h2 id="offline-title">离线使用</h2>
+          <p>首次联网打开时，会自动保存课程、小游戏和图示。准备好后即可离线练习。</p>
+          <p class="parent-status" data-offline-status role="status">正在准备离线资源…</p>
+          <button id="prepare-offline" type="button" hidden>重新准备离线</button>
+          <p class="parent-note">在 iPad 上，可用 Safari 的分享菜单把小花园添加到主屏幕。</p>
+        </section>
+        <section class="parent-panel" aria-labelledby="update-title">
+          <h2 id="update-title">应用更新</h2>
+          <p>联网时可以检查新版本。有新版时，重新加载页面即可更新，已保存的练习记录和设置会保留。</p>
+          <div class="parent-actions">
+            <button id="check-update" type="button" disabled>检查更新</button>
+            <button id="reload-page" class="secondary" type="button">重新加载页面</button>
+          </div>
+          <p class="parent-status" data-update-status role="status"></p>
+        </section>
+        <section class="parent-panel" aria-labelledby="challenge-record-title">
+          <h2 id="challenge-record-title">闯关记录</h2>
+          <p>看看孩子在哪些技能上独立做对、换题后做对，哪些还想再练。</p>
+          <a class="garden-text-link" href="#parent/records" id="open-challenge-records">查看闯关记录 <span aria-hidden="true">→</span></a>
+        </section>
+        <section class="parent-panel" aria-labelledby="parent-progress-title">
+          <h2 id="parent-progress-title">学习进度</h2>
+          <p>想从头开始时，可以重置当前浏览器的学习进度。</p>
+          <button id="reset-progress" type="button">重置学习进度</button>
+        </section>
+      </div>
+      <p class="parent-toast" id="reset-progress-toast" role="status"></p>
+    </section>
+    <section class="parent-main" id="challenge-records" aria-labelledby="challenge-records-title" hidden>
+      <header class="garden-page-header">
+        <div class="garden-page-heading">
+          <p class="garden-page-kicker">家长小角</p>
+          <h1 id="challenge-records-title" tabindex="-1">闯关记录</h1>
+        </div>
+        <a class="garden-text-link" href="#parent"><span aria-hidden="true">←</span> 返回家长中心</a>
+      </header>
+      <p class="parent-note">这里显示每项技能最近的闯关结果，记录保存在当前浏览器。</p>
+      <div class="challenge-record-groups" id="challenge-record-groups"></div>
+    </section>
   </main>
+  <dialog id="reset-progress-dialog" class="garden-parent-dialog" aria-labelledby="reset-progress-title" aria-describedby="reset-progress-note">
+    <h2 id="reset-progress-title">重置学习进度？</h2>
+    <p id="reset-progress-note">这会清除课程练习记录、复习计划、起点建议和闯关记录，清除后无法恢复。声音设置、游戏示范状态和离线资源会保留。</p>
+    <form method="dialog">
+      <button type="submit" autofocus>取消</button>
+      <button id="confirm-reset-progress" class="parent-reset-confirm" type="button">确认重置</button>
+    </form>
+    <p class="parent-status" id="reset-progress-error" role="status"></p>
+  </dialog>
 </body>
 </html>
