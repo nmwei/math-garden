@@ -208,29 +208,13 @@
           </div>
           <p class="parent-status" data-update-status role="status"></p>
         </section>
-        <section class="parent-panel" aria-labelledby="challenge-record-title">
-          <h2 id="challenge-record-title">闯关记录</h2>
-          <p>看看孩子在哪些技能上独立做对、换题后做对，哪些还想再练。</p>
-          <a class="garden-text-link" href="#parent/records" id="open-challenge-records">查看闯关记录 <span aria-hidden="true">→</span></a>
-        </section>
-        <section class="parent-panel" aria-labelledby="parent-progress-title">
+        <section class="parent-panel parent-progress" aria-labelledby="parent-progress-title">
           <h2 id="parent-progress-title">学习进度</h2>
           <p>想从头开始时，可以重置当前浏览器的学习进度。</p>
           <button id="reset-progress" type="button">重置学习进度</button>
         </section>
       </div>
       <p class="parent-toast" id="reset-progress-toast" role="status"></p>
-    </section>
-    <section class="parent-main" id="challenge-records" aria-labelledby="challenge-records-title" hidden>
-      <header class="garden-page-header">
-        <div class="garden-page-heading">
-          <p class="garden-page-kicker">家长小角</p>
-          <h1 id="challenge-records-title" tabindex="-1">闯关记录</h1>
-        </div>
-        <a class="garden-text-link" href="#parent"><span aria-hidden="true">←</span> 返回家长中心</a>
-      </header>
-      <p class="parent-note">这里显示每项技能最近的闯关结果，记录保存在当前浏览器。</p>
-      <div class="challenge-record-groups" id="challenge-record-groups"></div>
     </section>
   </main>
   <dialog id="reset-progress-dialog" class="garden-parent-dialog" aria-labelledby="reset-progress-title" aria-describedby="reset-progress-note">

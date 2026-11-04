@@ -160,8 +160,10 @@ function challengePassed(outcome) {
 function saveChallengeRecord(path, skill, outcome) {
   const previous = readChallengeRecord(path, skill);
   const key = challengeRecordKey(path, skill);
-  if (challengePassed(previous?.outcome)) return;
-  writeCourseMemory(key, { attempts: (previous?.attempts ?? 0) + 1, outcome });
+  writeCourseMemory(key, {
+    attempts: (previous?.attempts ?? 0) + 1,
+    outcome: challengePassed(previous?.outcome) ? previous.outcome : outcome,
+  });
 }
 
 function nextChallengeIndex(path) {
@@ -175,4 +177,20 @@ function completedChallengeCount(path) {
 
 function challengeLesson(skill) {
   return courseLessons.find(item => item.id === skill.lesson);
+}
+
+function canChallengeStation(path, skill, nextIndex = nextChallengeIndex(path)) {
+  return path.skills[nextIndex] === skill || challengePassed(readChallengeRecord(path, skill)?.outcome);
+}
+
+function challengeRouteHref(path, skill) {
+  return `#course/route/${path.id}${skill ? `/${skill.id}` : ''}`;
+}
+
+function challengeStationHref(path, skill) {
+  return `#course/challenge/${path.id}/${skill.id}`;
+}
+
+function challengeLessonHref(path, skill) {
+  return `#course/lesson/${skill.lesson}/${path.id}/${skill.id}`;
 }

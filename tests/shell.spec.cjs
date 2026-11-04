@@ -17,9 +17,9 @@ async function openParent(page) {
 }
 
 test('家长入口显示长按进度，松手和拖离会取消，键盘长按可进入', async ({ page }) => {
-  await page.goto('/#parent/records');
+  await page.goto('/#parent');
   await expect(page).toHaveURL('/');
-  await expect(heading(page, '闯关记录')).toBeHidden();
+  await expect(heading(page, '家长中心')).toBeHidden();
   await page.getByRole('dialog').getByRole('button', { name: '返回', exact: true }).click();
   const entry = navLink(page, '家长小角');
   await entry.click();
@@ -298,10 +298,12 @@ test('家长确认后可离线重置学习进度，保留设备设置和离线�
   await expect(button(page, '练习声音')).toHaveAttribute('aria-pressed', 'false');
   expect(Object.values(await readStorage(Object.keys(learning)))).toEqual([null, null, null, null]);
   expect(await readStorage(Object.keys(preferences))).toEqual(preferences);
-  await page.getByRole('link', { name: '查看闯关记录', exact: true }).click();
-  await expect(page.getByRole('link', { name: '还没测 · 去测「数出一共有多少」' })).toBeVisible();
   await navLink(page, '花园闯关').click();
   await expect(page.getByRole('link', { name: '试一节' })).toHaveAttribute('href', '#course/practice/notice-small');
+  const numbers = page.getByRole('article', { name: '数与计算' });
+  await expect(numbers.getByText('已完成 0 / 16 站')).toBeVisible();
+  await numbers.getByRole('link', { name: '看路线' }).click();
+  await expect(page.getByRole('link', { name: '挑战这一站' })).toHaveAttribute('href', '#course/challenge/number/count-total');
 });
 
 test('离线就绪后可重载，并打开从未访问的闯关和游戏', async ({ page, context }) => {

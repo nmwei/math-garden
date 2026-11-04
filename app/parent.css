@@ -10,7 +10,7 @@
   border: 1px solid var(--border);
   border-radius: 24px;
 }
-.parent-voice { grid-column: 1 / -1; }
+.parent-voice, .parent-progress { grid-column: 1 / -1; }
 .parent-panel h2 { margin: 0 0 .5rem; font-size: 1.3rem; }
 .parent-panel p { margin: .55rem 0; }
 .parent-panel label { display: block; margin: .9rem 0 .35rem; font-weight: 700; }
@@ -52,11 +52,3 @@
 @media (max-width: 680px) {
   .parent-panels { grid-template-columns: minmax(0, 1fr); }
 }
-
-.challenge-record-groups {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 235px), 1fr));
-  gap: .85rem;
-  align-items: start;
-}
-.record-check-link { flex-shrink: 0; font-size: .82rem; }

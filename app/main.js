@@ -35,11 +35,11 @@ function renderChallengeHub() {
         <span>已完成 ${completed} / ${total} 站</span>
         <progress max="${total}" value="${completed}" aria-label="${path.title}闯关进度"></progress>
       </div>
-      ${next ? `<p class="challenge-path-next">第 ${nextIndex + 1} 站 · ${next.title}</p>
-        <div class="challenge-path-actions">
-          <a class="garden-course-link primary" href="#course/challenge/${path.id}">${action}</a>
-          ${needsPractice ? `<a class="garden-text-link" href="#course/lesson/${next.lesson}/${path.id}">去练这一课</a>` : ''}
-        </div>` : '<p class="challenge-path-next">这条小路走完啦！</p>'}
+      <p class="challenge-path-next">${next ? `第 ${nextIndex + 1} 站 · ${next.title}` : '这条小路走完啦！'}</p>
+      <div class="challenge-path-actions">
+        ${next ? `<a class="garden-course-link primary" href="#course/challenge/${path.id}">${action}</a>` : ''}
+        <a class="garden-text-link" href="${challengeRouteHref(path)}">看路线 <span aria-hidden="true">→</span></a>
+      </div>
     </article>`;
   }).join('');
 }
@@ -54,7 +54,7 @@ function showGardenSection(active, focus) {
     section.hidden = section !== active;
   }
   if (active === home) gardenShell.select('home');
-  else if (active === parentSettings || active === challengeRecords) gardenShell.select('parent');
+  else if (active === parentSettings) gardenShell.select('parent');
   else if (active !== courseRoot) gardenShell.select('games');
   focus?.focus();
 }
@@ -93,7 +93,7 @@ function navigateWithinGarden() {
   stopCountingFeedback();
   refreshSoundSetting();
   const hash = location.hash;
-  if (hash === '#parent' || hash === '#parent/records') {
+  if (hash === '#parent') {
     if (!parentAccess && history.state?.parentAccess !== true) {
       history.replaceState(null, '', `${location.pathname}${location.search}${lastPublicHash}`);
       navigateWithinGarden();
@@ -103,32 +103,30 @@ function navigateWithinGarden() {
     parentAccess = true;
     history.replaceState({ parentAccess: true }, '');
     window.scrollTo(0, 0);
-    openParentView(hash === '#parent/records');
+    openParentView();
     return;
   }
 
   lastPublicHash = hash;
+  parentAccess = false;
   document.title = gardenTitle;
+  window.scrollTo(0, 0);
   if (hash === '#games') {
-    parentAccess = false;
     showGameList(document.querySelector('#games-title'));
   } else if (hash === '#course' || hash.startsWith('#course/')) {
     showGardenSection(courseRoot);
     openCourseRoute(hash.slice('#course'.length + 1));
-    parentAccess = parentAccess && Boolean(challengeTarget);
   } else {
-    parentAccess = false;
     renderHome();
     showGardenSection(home, document.querySelector('#home-title'));
   }
-  window.scrollTo(0, 0);
 }
 
 window.addEventListener('hashchange', navigateWithinGarden);
 document.addEventListener('click', (event) => {
   const anchor = event.target.closest('a');
   if (!anchor || event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
-  if (anchor.dataset.gardenNav === 'parent' && parentSettings.hidden && challengeRecords.hidden) {
+  if (anchor.dataset.gardenNav === 'parent' && parentSettings.hidden) {
     event.preventDefault();
     requestParentRoute('#parent');
   } else if (anchor.getAttribute('href') === './') {

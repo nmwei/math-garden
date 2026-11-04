@@ -11,7 +11,7 @@ let firstGap;
 let placementRetry;
 let retriedPlacement;
 let returnToChallenge;
-let challengeTarget;
+let returnToStation;
 
 function saveResult() {
   writeCourseMemory(`math-garden:course:${lesson.id}`, { independent, total: lesson.practice.length });
@@ -86,13 +86,12 @@ courseRoot.addEventListener('toggle', ({ target }) => {
   }
 }, true);
 
-function wrapLesson(content) {
+function wrapLesson(content, routeBack = returnToChallenge && challengeRouteHref(returnToChallenge, returnToStation)) {
   gardenVoice.stop();
   const stage = lesson ? stageOf(lesson) : null;
   const inChallenge = mode === 'challenge';
-  let back = `<a class="course-action" href="${stage ? `#course/${stage.id}` : '#course'}">回学习地图</a>`;
-  if (challengeTarget) back = '<a class="course-action" href="#parent/records">返回闯关记录</a>';
-  else if (inChallenge || returnToChallenge) back = '<a class="course-action" href="./">回花园闯关</a>';
+  const back = routeBack ? `<a class="course-action" href="${routeBack}">回路线</a>`
+    : `<a class="course-action" href="${stage ? `#course/${stage.id}` : '#course'}">回学习地图</a>`;
   courseRoot.innerHTML = `<div class="course-top">
     ${back}
     <span class="course-kicker">${stage?.label ?? (inChallenge ? '花园闯关' : '找起点')}</span>
@@ -234,13 +233,14 @@ function renderResult() {
   if (mode === 'study') saveResult();
   scheduleCourseReview(lesson.id, independent === practiceItems.length);
   const nextLesson = courseLessons[courseLessons.indexOf(lesson) + 1];
-  const retryRoute = returnToChallenge && `${returnToChallenge.id}${challengeTarget ? `/${challengeTarget.id}` : ''}`;
+  const retryStation = returnToChallenge && canChallengeStation(returnToChallenge, returnToStation);
   wrapLesson(`<p class="course-kicker">又长大了一点</p><h1 tabindex="-1">${mode === 'review' ? '这次复习完成啦' : '这一课练完啦'}</h1>
     <p class="course-prompt">本次首次独立答对 ${independent} / ${practiceItems.length} 题</p>
     <p>${independent === practiceItems.length ? '你用自己的办法把这组做完了。' : '用提示找到办法也是在学习。想试试时，可以再练一遍。'}</p>
     <div class="course-controls">
       <button type="button" class="course-action" data-action="start">再练一次</button>
-      ${retryRoute ? `<a class="primary course-action" href="#course/challenge/${retryRoute}">回闯关再试</a>`
+      ${retryStation ? `<a class="primary course-action" href="${challengeStationHref(returnToChallenge, returnToStation)}">回这一站再试</a>`
+        : returnToChallenge ? `<a class="primary course-action" href="${challengeRouteHref(returnToChallenge, returnToStation)}">完成，回路线</a>`
         : nextLesson ? lessonLink(nextLesson, '去下一课', true) : ''}
     </div>
     ${renderHomeActivity(stageOf(lesson), lesson)}`);
@@ -293,6 +293,9 @@ courseRoot.addEventListener('click', event => {
       case 'challenge-next':
         courseChallenge.next();
         break;
+      case 'challenge-retry':
+        courseChallenge.retryCurrent();
+        break;
       case 'unsure':
         checkAnswer();
         break;
@@ -333,11 +336,17 @@ function openCourseRoute(route) {
   const challengePath = challengePaths.find(path => path.id === id);
   const selectedSkill = challengePath?.skills.find(skill => skill.id === context);
   lesson = ['lesson', 'practice', 'review'].includes(routeType) ? courseLessons.find(item => item.id === id) : null;
-  returnToChallenge = lesson && challengePaths.find(path => path.id === context);
+  const lessonPath = lesson && challengePaths.find(path => path.id === context);
+  returnToStation = lessonPath?.skills.find(skill => skill.id === skillId && skill.lesson === lesson.id);
+  returnToChallenge = returnToStation ? lessonPath : null;
   const inChallenge = routeType === 'challenge' && challengePath && (!context || selectedSkill);
-  challengeTarget = inChallenge ? selectedSkill : returnToChallenge?.skills.find(skill => skill.id === skillId && skill.lesson === lesson.id);
-  gardenShell.select(inChallenge || returnToChallenge ? 'home' : 'course');
-  if (inChallenge) {
+  const showRoute = challengePath && (routeType === 'route'
+    || (inChallenge && selectedSkill && !canChallengeStation(challengePath, selectedSkill)));
+  gardenShell.select(showRoute || inChallenge || returnToChallenge ? 'home' : 'course');
+  if (showRoute) {
+    mode = 'route';
+    renderChallengeRoute(challengePath, selectedSkill);
+  } else if (inChallenge) {
     mode = 'challenge';
     courseChallenge.start(challengePath, selectedSkill);
   } else if (route === 'start-check') {
