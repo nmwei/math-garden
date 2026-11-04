@@ -22,6 +22,7 @@ test('家长入口显示长按进度，松手和拖离会取消，键盘长按�
   const dialog = page.getByRole('dialog');
   const hold = dialog.getByRole('button', { name: '长按进入', exact: true });
   await expect(hold).toHaveAccessibleDescription('按住 1 秒');
+  await expect(dialog.getByText('按住 1 秒', { exact: true })).toBeHidden();
   await hold.click();
   await expect(dialog).toBeVisible();
   await expect(hold).not.toHaveClass(/\bholding\b/);

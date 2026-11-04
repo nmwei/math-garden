@@ -280,9 +280,7 @@ h1 {
 .garden-parent-dialog::backdrop { background: #263c3380; }
 .garden-parent-dialog h2 { margin: 0; }
 .garden-parent-dialog p { color: var(--muted); }
-.garden-parent-dialog form { display: flex; flex-wrap: wrap; justify-content: flex-end; align-items: flex-start; gap: .5rem; }
-.parent-hold-action { display: grid; justify-items: center; gap: .25rem; }
-.parent-hold-action small { color: var(--muted); }
+.garden-parent-dialog form { display: flex; flex-wrap: wrap; justify-content: flex-end; align-items: center; gap: .5rem; }
 .parent-hold {
   position: relative;
   overflow: hidden;
@@ -291,6 +289,7 @@ h1 {
   user-select: none;
   -webkit-user-select: none;
   -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
 }
 .parent-hold::before {
   content: '';
