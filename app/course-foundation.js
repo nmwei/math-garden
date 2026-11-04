@@ -67,6 +67,7 @@ const foundation = {
     },
     {
       id: 'compare-measure-sort', title: '量一量，分一分', goal: '用同样大小的小格比较，用相同规则整理。',
+      homeTip: '把两支铅笔的一端对齐，看看哪支更长。',
       example: { text: '两条都从左边对齐。每格一样长，看看哪条用了更多格。', model: { kind: 'bars', items: [['甲', 3], ['乙', 5]] } },
       practice: [
         { prompt: '哪条用了更多格？', model: { kind: 'bars', items: [['甲', 5], ['乙', 2]] }, choices: ['甲', '乙', '一样多'], answer: '甲', hint: '从同一边开始，比谁伸得更远。', explanation: '甲有五格，乙有两格。格子一样长，甲更长。' },

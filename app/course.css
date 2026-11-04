@@ -96,21 +96,12 @@
 .course-teaching-answer[open] { border-top: 1px solid var(--border); }
 .course-speech-status { display: block; font-size: .9rem; }
 .course-note { color: var(--muted); }
-.course-home-task {
-  margin-top: .8rem;
+.course-home-tip {
+  max-width: 65ch;
+  margin: .85rem auto 0;
   color: var(--muted);
-  text-align: left;
+  font-size: .875rem;
 }
-.course-done .course-home-task { max-width: 65ch; margin-inline: auto; }
-.course-home-task summary {
-  min-height: 44px;
-  padding-block: .65rem;
-  width: fit-content;
-  font-weight: 600;
-  cursor: pointer;
-}
-.course-home-task p { margin: .05rem 0 .45rem; }
-.course-home-task summary:focus-visible { outline: 3px solid #a47935; outline-offset: 2px; }
 .course-status { min-height: 1.55em; margin: .8rem 0 .25rem; font-weight: 650; }
 .course-feedback {
   display: inline-flex;

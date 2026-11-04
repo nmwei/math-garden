@@ -49,33 +49,29 @@ for (const { first, retry, title, destination, reason } of [
   });
 }
 
-test('在家活动同一天固定，隔天重新展开就会换一条', async ({ page }) => {
-  await page.clock.setFixedTime(new Date(2026, 10, 3, 12));
-  await page.goto('/#course/foundation');
-  const details = page.locator('.course-home-task');
-  const summary = details.locator('summary');
-  const task = details.locator('p');
-  await summary.click();
-  const first = await task.textContent();
-  await page.reload();
-  await summary.click();
-  await expect(task).toHaveText(first);
+test('生活小点子只在相应课后显示为一行文字', async ({ page }) => {
+  await page.goto('/#course/grade-1');
+  await expect(page.getByText('在家试一试', { exact: true })).toHaveCount(0);
+  await link(page, '在 10 的小站停一下').click();
+  await button(page, '开始练习').click();
+  await button(page, '第 9 格').click();
+  await button(page, '第 10 格').click();
+  await button(page, '放好了').click();
+  await button(page, '下一题').click();
+  await button(page, '数轴上的 8').click();
+  await button(page, '下一题').click();
+  await button(page, '7').click();
+  await button(page, '下一题').click();
+  await button(page, '12').click();
+  await button(page, '下一题').click();
+  await button(page, '2').click();
+  await button(page, '看练习结果').click();
 
-  const displayed = new Set([first]);
-  for (let day = 4; day <= 9; day++) {
-    await summary.click();
-    await expect(task).toBeHidden();
-    await page.clock.setFixedTime(new Date(2026, 10, day, 12));
-    const previous = await task.textContent();
-    await summary.click();
-    await expect(task).not.toHaveText(previous);
-    if (day <= 8) displayed.add(await task.textContent());
-  }
-  expect(displayed.size).toBe(6);
-  await link(page, '一年级').click();
-  await expect(details).toHaveAttribute('data-home-stage', 'grade-1');
-  await summary.click();
-  expect(displayed.has(await task.textContent())).toBe(false);
+  await expect(link(page, '去下一课')).toBeVisible();
+  const tip = page.getByText('吃水果时，可以拿 8 颗葡萄，看看还差几颗到 10。', { exact: true });
+  await expect(tip).toBeVisible();
+  await expect(tip).toHaveJSProperty('tagName', 'P');
+  await expect(page.getByText('在家试一试', { exact: true })).toHaveCount(0);
 });
 
 test('完成一课后隔日出现复习，复习采用另一组题', async ({ page }) => {
@@ -93,6 +89,7 @@ test('完成一课后隔日出现复习，复习采用另一组题', async ({ pa
   await button(page, '4').click();
   await button(page, '看练习结果').click();
   await expect(heading(page, '这一课练完啦')).toBeVisible();
+  await expect(page.locator('.course-home-tip')).toHaveCount(0);
   await link(page, '回学习地图').click();
   await expect(heading(page, '今日复习')).toBeHidden();
 
