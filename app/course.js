@@ -76,21 +76,8 @@ function renderMap(stageId) {
         <span class="course-note">已练 ${active.lessons.filter(item => readResult(item)).length} / ${active.lessons.length} 课</span>
       </div>
       <div class="course-lessons">${active.lessons.map(item => courseCard(item, item === recommended)).join('')}</div>
-      ${renderHomeActivity(active)}
     </section>`;
 }
-
-function renderHomeActivity(stage, item) {
-  const text = item?.homeTask ?? dailyHomeActivity(stage.id);
-  const daily = item?.homeTask ? '' : ` data-home-stage="${stage.id}"`;
-  return `<details class="course-home-task"${daily}><summary>在家试一试</summary><p>${courseText(text)}</p></details>`;
-}
-
-courseRoot.addEventListener('toggle', ({ target }) => {
-  if (target.matches('details[data-home-stage][open]')) {
-    target.querySelector('p').textContent = dailyHomeActivity(target.dataset.homeStage);
-  }
-}, true);
 
 function wrapLesson(content, routeBack = returnToChallenge && challengeRouteHref(returnToChallenge, returnToStation)) {
   gardenVoice.stop();
@@ -278,7 +265,7 @@ function renderResult() {
         : returnToChallenge ? `<a class="primary course-action" href="${challengeRouteHref(returnToChallenge, returnToStation)}">完成，回路线</a>`
         : nextLesson ? lessonLink(nextLesson, '去下一课', true) : ''}
     </div>
-    ${renderHomeActivity(stageOf(lesson), lesson)}`);
+    ${mode === 'study' && lesson.homeTip ? `<p class="course-home-tip">${courseText(lesson.homeTip)}</p>` : ''}`);
 }
 
 function renderPlacementIntro() {

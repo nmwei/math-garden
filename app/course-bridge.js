@@ -4,7 +4,7 @@ const bridgeLessons = [
     lesson: {
       id: 'bridge-quantity-to-ten', title: '把 6 到 9 朵花摆出来',
       goal: '从数字取出指定数量，摆满上排五格后接着数。',
-      homeTask: '给孩子一碗扣子，请她取 7 颗，再把取出来的扣子从一排改成两排，问她总数有没有变。',
+      homeTip: '把 7 枚扣子从一排挪成两排，再数数是不是还一样多。',
       example: {
         text: '摆 6 朵时，先在上排摆 5 朵，再在下面摆 1 朵。换个位置，花还是这么多。',
         model: { kind: 'frame', filled: 6 },
@@ -116,7 +116,7 @@ const bridgeLessons = [
     stage: 'grade-1', after: 'g1-add-subtract-ten',
     lesson: {
       id: 'bridge-missing-part', title: '找回缺的一部分',
-      homeTask: '用 10 颗豆子。藏一部分在杯子里，给孩子看剩下的豆子，让她想办法找到藏了几颗。',
+      homeTip: '用杯子扣住 10 颗豆子中的几颗，数数露出的豆子，猜猜杯子里有几颗。',
       goal: '知道总数和其中一部分时，用加法或减法找出另一部分。',
       example: {
         text: '两篮一共有八个松果，第一篮有六个。把六个从总数八个里去掉，剩下两个是第二篮的。可以用 8 − 6 = 2 来找，再用 6 + 2 = 8 检查。',
@@ -149,7 +149,7 @@ const bridgeLessons = [
     stage: 'grade-1', after: 'g1-within-twenty',
     lesson: {
       id: 'bridge-cross-ten', title: '在 10 的小站停一下',
-      homeTask: '用两排各五格的蛋盒，把 8 颗和另外 5 颗豆子放在桌上，请孩子先装满蛋盒，再看看桌上还剩几颗。',
+      homeTip: '吃水果时，可以拿 8 颗葡萄，看看还差几颗到 10。',
       goal: '把要加或要减的数拆成两步，经过 10 后接着算。',
       example: {
         text: '7 加 6，先从 6 里拿 3 和 7 凑成 10。那 6 里还剩 3，再加上去就是 13。',
@@ -181,7 +181,7 @@ const bridgeLessons = [
     stage: 'grade-1', after: 'g1-tens-and-ones',
     lesson: {
       id: 'bridge-bundle-ten', title: '十根一捆，数得更清楚',
-      homeTask: '用冰棒棍或短吸管，把 24 根十根一捆。请孩子说有几捆和几根，拆开一捆后再检查总根数有没有变。',
+      homeTip: '找 24 根吸管，十根扎一捆，再数数有几捆、剩几根。',
       goal: '把散的物件每十个换成一捆，并用十位和个位比较数量。',
       example: {
         text: '24 根小棒，每 10 根捆一捆，可以捆 2 捆，还剩 4 根。换成捆只是换一种数法，总数仍是 24。',
