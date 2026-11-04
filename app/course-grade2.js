@@ -1,6 +1,7 @@
 const gradeTwo = {
   id: 'grade-2',
-  label: '二年级',
+  label: '进阶',
+  reference: '小学二年级常见内容',
   title: '让数和图形帮我们解决问题',
   description: '在万以内认识数位，用等组、分物和图表解决花园里的小问题。',
   lessons: [

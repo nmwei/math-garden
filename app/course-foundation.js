@@ -1,5 +1,5 @@
 const foundation = {
-  id: 'foundation', label: '零基础', title: '小小启蒙',
+  id: 'foundation', label: '启蒙', reference: '适合从点数和图形开始的孩子', title: '小小启蒙',
   description: '看一眼，点一朵，摆一摆。从身边的东西发现数量、形状和规律。',
   lessons: [
     {

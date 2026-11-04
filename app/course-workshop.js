@@ -1,6 +1,6 @@
 const workshopRoute = '#course/workshop';
 const workshopLessons = [...courseStoryWorkshop, ...courseFractionWorkshop];
-const workshopTitle = '三年级数学工坊';
+const workshopTitle = '数学工坊';
 
 function workshopRecordKey(id) {
   return `math-garden:workshop:${id}`;
@@ -136,8 +136,8 @@ const courseWorkshop = (() => {
 
   function page(title, note, content, back = workshopRoute) {
     gardenVoice.stop();
-    courseRoot.innerHTML = `<div class="course-top"><a class="course-action" href="${back}">${back === workshopRoute ? '回数学工坊' : '回三年级'}</a>
-      <span class="course-kicker">三年级</span></div>
+    courseRoot.innerHTML = `<div class="course-top"><a class="course-action" href="${back}">${back === workshopRoute ? '回数学工坊' : '回综合'}</a>
+      <span class="course-kicker">综合</span></div>
       <section class="course-panel course-workshop">
         <header class="workshop-heading"><p class="course-kicker">${courseText(note)}</p><h1 tabindex="-1">${courseText(title)}</h1></header>
         ${content}

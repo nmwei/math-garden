@@ -1,6 +1,7 @@
 const gradeOne = {
   id: 'grade-1',
-  label: '一年级',
+  label: '基础',
+  reference: '小学一年级常见内容',
   title: '从数得清到算得明白',
   description: '认识 0～100，用图、十格和十位个位学加减，读整时，比较长度，认识和分类图形。',
   lessons: [
