@@ -114,14 +114,17 @@ button:disabled { cursor: default; }
 .garden-page-note { white-space: nowrap; }
 .garden-page-note span { margin-inline-end: .3rem; color: var(--leaf); }
 .today-card {
+  --today-radius: 24px;
+  position: relative;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto min(15%, 126px);
+  grid-template-columns: minmax(0, 1fr) min(30%, 264px);
   align-items: center;
   gap: clamp(.75rem, 3vw, 1.75rem);
   margin-bottom: .75rem;
-  padding: clamp(.9rem, 2.4vw, 1.25rem);
+  min-height: clamp(10.75rem, 16vw, 12rem);
+  padding: clamp(1rem, 3vw, 1.65rem);
   border: 1px solid #d9dfc9;
-  border-radius: 24px;
+  border-radius: var(--today-radius);
   background: #ebefdf;
 }
 .garden-feature-title { margin: 0; font-size: clamp(1.25rem, 2.35vw, 1.625rem); line-height: 1.3; }
@@ -134,12 +137,33 @@ h1 {
 .today-card h2 { margin: 0; color: var(--muted); font-size: .95rem; }
 #today-lesson { margin: .25rem 0; font-size: clamp(1.2rem, 2.5vw, 1.6rem); font-weight: 700; }
 #today-detail { margin: 0; color: var(--muted); }
-#today-start { white-space: nowrap; }
+.today-action {
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  min-height: 44px;
+  margin-top: .2rem;
+  color: #345c49;
+  font-weight: 700;
+  text-decoration: none;
+}
+.today-action svg { width: 1.1rem; height: 1.1rem; flex: none; }
+.today-action::after { content: ''; position: absolute; inset: 0; border-radius: var(--today-radius); }
+.today-action:active { filter: none; }
+.today-card:active { background: #e5ebd8; }
+.today-action:focus-visible { outline: none; }
+.today-action:focus-visible::after { outline: 3px solid #a47935; outline-offset: 4px; }
+@media (hover: hover) {
+  .today-card:hover { border-color: #9cae91; }
+  .today-card:hover .today-action-label { text-decoration: underline; text-underline-offset: .2em; }
+}
 .garden-text-link { display: inline-flex; align-items: center; gap: .4em; min-height: 44px; color: var(--leaf); font-weight: 650; }
 .today-art {
   display: block;
   width: 100%;
   height: auto;
+  aspect-ratio: 7 / 4;
+  object-fit: cover;
   justify-self: end;
 }
 .game-shelf { padding: clamp(.85rem, 2.6vw, 1.65rem); border: 1px solid var(--border); border-radius: 24px; background: #f1f1e6; }
@@ -203,8 +227,8 @@ h1 {
   font-size: 1rem;
 }
 .secondary { font-size: .95rem; }
-.game-hear svg { vertical-align: -.2em; margin-inline-end: .25rem; }
-.practice-muted .game-hear { display: none; }
+.practice-hear svg { vertical-align: -.2em; margin-inline-end: .25rem; }
+.practice-muted .practice-hear { display: none; }
 .choices button.is-retry {
   background: #f8ecdc;
   border-color: #9a6b39;
@@ -241,7 +265,7 @@ h1 {
   .activity-art { width: clamp(48px, 5.8vw, 68px); }
 }
 @media (max-width: 680px) {
-  .today-card { grid-template-columns: minmax(0, 1fr) auto; }
+  .today-card { grid-template-columns: minmax(0, 1fr); min-height: 0; }
   .today-art { display: none; }
   .garden-bar { flex-wrap: wrap; }
   .garden-nav { order: 1; flex: 0 0 100%; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }

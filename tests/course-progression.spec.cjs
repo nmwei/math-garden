@@ -20,7 +20,7 @@ test('小任务找到合适的学习起点，保留早期课程的未练状态',
   await expect(link(page, '去试这一课')).toHaveAttribute('href', '#course/lesson/bridge-missing-part');
   await link(page, '回学习地图').click();
   await page.reload();
-  await expect(link(page, '开始推荐课')).toHaveAttribute('href', '#course/lesson/bridge-missing-part');
+  await expect(link(page, '找回缺的一部分')).toHaveAccessibleDescription('推荐');
   await link(page, '零基础').click();
   await expect(link(page, '看见几朵花').getByText('可以开始', { exact: true })).toBeVisible();
 });

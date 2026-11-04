@@ -1,4 +1,4 @@
-const VERSION = '1.0.19';
+const VERSION = '1.0.27';
 const scope = self.registration.scope;
 const prefix = `math-garden:app:${encodeURIComponent(scope)}:`;
 const cacheName = `${prefix}${VERSION}`;

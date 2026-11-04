@@ -185,6 +185,125 @@ test('普通话声音仅在明确操作时播放，选择和静音可跨页保�
   await expect(button(page, '听题目')).toBeVisible();
 });
 
+test('普通话自动优先本地，远端失败后可用本地声音读例题和闯关题', async ({ page, context }) => {
+  await page.addInitScript(() => {
+    const speech = new EventTarget();
+    window.testSpoken = [];
+    speech.getVoices = () => [
+      { name: '远端普通话', lang: 'zh-CN', voiceURI: 'remote-cn', localService: false },
+      { name: '本地国语', lang: 'zh-TW', voiceURI: 'local-tw', localService: true },
+      { name: '本地普通话', lang: 'zh-CN', voiceURI: 'local-cn', localService: true },
+    ];
+    speech.cancel = () => {};
+    speech.speak = utterance => {
+      const voice = utterance.voice?.voiceURI;
+      window.testSpoken.push({ text: utterance.text, voice });
+      queueMicrotask(() => {
+        if (voice === 'remote-cn') utterance.onerror?.({ error: 'network' });
+        else utterance.onend?.();
+      });
+    };
+    Object.defineProperty(window, 'speechSynthesis', { configurable: true, value: speech });
+    Object.defineProperty(window, 'SpeechSynthesisUtterance', {
+      configurable: true,
+      value: class {
+        constructor(text) { this.text = text; }
+      },
+    });
+  });
+
+  const spoken = () => page.evaluate(() => window.testSpoken);
+  await page.goto('/');
+  await openParent(page);
+  const voice = page.getByRole('combobox', { name: '普通话声音', exact: true });
+  await expect(voice.locator('option[value="remote-cn"]')).toHaveText('远端普通话 · zh-CN · 需联网');
+  await expect(voice.locator('option[value="local-cn"]')).toHaveText('本地普通话 · zh-CN · 本地');
+  await button(page, '试听声音').click();
+  await expect.poll(async () => (await spoken()).map(item => item.voice)).toEqual(['local-cn']);
+
+  await voice.selectOption('remote-cn');
+  await button(page, '试听声音').click();
+  await expect(page.getByText('试听完成 · 本地普通话', { exact: true })).toBeVisible();
+  await expect(voice).toHaveValue('remote-cn');
+  expect((await spoken()).map(item => item.voice)).toEqual(['local-cn', 'remote-cn', 'local-cn']);
+
+  await page.goto('/#course/lesson/g1-within-twenty');
+  await expect(button(page, '听例子')).toBeVisible();
+  expect(await spoken()).toHaveLength(3);
+  await context.setOffline(true);
+  await button(page, '听例子').click();
+  expect((await spoken()).at(-1)).toMatchObject({ text: expect.stringContaining('8 加 5'), voice: 'local-cn' });
+  await button(page, '开始练习').click();
+  await button(page, '听题目').click();
+  expect((await spoken()).at(-1)).toEqual({ text: '8 加 4 等于多少？', voice: 'local-cn' });
+
+  await page.goto('/#course/challenge/number');
+  await button(page, '听题目').click();
+  expect((await spoken()).at(-1)).toEqual({ text: '点点花朵，一共有几朵？', voice: 'local-cn' });
+  expect(await spoken()).toHaveLength(6);
+  await openParent(page);
+  await button(page, '练习声音').click();
+  await page.goto('/#course/challenge/number');
+  await expect(page.getByText('点点花朵，一共有几朵？', { exact: true })).toBeVisible();
+  await expect(button(page, '听题目')).toBeHidden();
+});
+
+test('家长确认后可离线重置学习进度，保留设备设置和离线资源', async ({ page, context }) => {
+  const learning = {
+    'math-garden:course:notice-small': JSON.stringify({ independent: 3, total: 3 }),
+    'math-garden:review:count-total': JSON.stringify({ streak: 1, variant: 1, practiceOn: '2020-01-01', reviewOn: '2020-01-02' }),
+    'math-garden:placement:v1': JSON.stringify('bridge-missing-part'),
+    'math-garden:challenge:v1:number:count-total': JSON.stringify({ attempts: 1, outcome: 'independent' }),
+  };
+  const preferences = {
+    'math-garden:sound-enabled': 'false',
+    'math-garden:voice-uri': 'preferred-voice',
+    'math-garden:demo-seen:counting': 'true',
+    'other-app:progress': 'keep',
+  };
+  const readStorage = keys => page.evaluate(names =>
+    Object.fromEntries(names.map(key => [key, localStorage.getItem(key)])), keys);
+
+  await page.goto('/');
+  await page.evaluate(entries => {
+    for (const [key, value] of Object.entries(entries)) localStorage.setItem(key, value);
+  }, { ...learning, ...preferences });
+  await page.reload();
+  await expect(page.getByRole('link', { name: '复习一下' })).toBeVisible();
+  await openParent(page);
+  const ready = page.getByText('已准备好，可离线练习。', { exact: true });
+  await expect(ready).toBeVisible({ timeout: 15000 });
+  await context.setOffline(true);
+
+  const reset = button(page, '重置学习进度');
+  const dialog = page.getByRole('dialog', { name: '重置学习进度？' });
+  await reset.click();
+  await expect(button(dialog, '取消')).toBeFocused();
+  await button(dialog, '取消').click();
+  await expect(dialog).toBeHidden();
+  await expect(reset).toBeFocused();
+  expect(await readStorage(Object.keys(learning))).toEqual(learning);
+
+  await page.clock.install();
+  await reset.click();
+  await button(dialog, '确认重置').click();
+  await expect(dialog).toBeHidden();
+  const toast = page.getByText('学习进度已重置', { exact: true });
+  await expect(toast).toBeVisible();
+  await expect(toast).toHaveCSS('position', 'fixed');
+  await page.clock.runFor(3000);
+  await expect(toast).toBeHidden();
+  await page.reload();
+  await expect(ready).toBeVisible();
+  await expect(button(page, '练习声音')).toHaveAttribute('aria-pressed', 'false');
+  expect(Object.values(await readStorage(Object.keys(learning)))).toEqual([null, null, null, null]);
+  expect(await readStorage(Object.keys(preferences))).toEqual(preferences);
+  await page.getByRole('link', { name: '查看闯关记录', exact: true }).click();
+  await expect(page.getByRole('link', { name: '还没测 · 去测「数出一共有多少」' })).toBeVisible();
+  await navLink(page, '花园闯关').click();
+  await expect(page.getByRole('link', { name: '试一节' })).toHaveAttribute('href', '#course/practice/notice-small');
+});
+
 test('离线就绪后可重载，并打开从未访问的闯关和游戏', async ({ page, context }) => {
   await page.goto('/#course');
   await expect(heading(page, '数学学习地图')).toBeVisible();

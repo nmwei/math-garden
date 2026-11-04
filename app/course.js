@@ -36,18 +36,19 @@ function lessonState(item) {
   return result.independent === result.total ? '已练 · 独立答对' : '已练 · 可复习';
 }
 
-function courseCard(item) {
-  return `<a class="course-lesson" href="#course/lesson/${item.id}" aria-label="${courseText(item.title)}">
-    <span class="course-card-state">${lessonState(item)}</span>
+function courseCard(item, isRecommended) {
+  return `<a class="course-lesson" href="#course/lesson/${item.id}" aria-label="${courseText(item.title)}"${isRecommended ? ' aria-describedby="course-recommendation"' : ''}>
+    <span class="course-card-meta">
+      <span class="course-card-state">${lessonState(item)}</span>
+      ${isRecommended ? '<span class="course-card-badge" id="course-recommendation">推荐</span>' : ''}
+    </span>
     <strong>${courseText(item.title)}</strong>
     <small>${courseText(item.goal)}</small>
   </a>`;
 }
 
 function renderMap(stageId) {
-  const { selected, placement, recommended, revisit, due } = getStudyPlan(stageId);
-  const recommendationLabel = recommended.id === placement ? '起点建议'
-    : selected ? '本阶段推荐' : placement ? '接下来可以学' : '推荐先学';
+  const { selected, recommended, revisit, due } = getStudyPlan(stageId);
   const active = selected ?? stageOf(recommended);
   const review = revisit && revisit !== recommended && !due.includes(revisit)
     ? reviewLink(revisit, `复习 · ${revisit.title}`) : '';
@@ -56,22 +57,9 @@ function renderMap(stageId) {
       <div class="garden-page-heading"><p class="garden-page-kicker">数学小课堂</p><h1 tabindex="-1">数学学习地图</h1></div>
       <p class="garden-page-note"><span aria-hidden="true">✳</span> 按自己的节奏学</p>
     </header>
-    <section class="course-hero" aria-labelledby="course-hero-title">
-      <div>
-        <h2 class="garden-feature-title" id="course-hero-title">从会的地方出发</h2>
-        <p>先动手，再用图和数字说清楚。</p>
-        <p class="course-note">${recommendationLabel}：「${courseText(recommended.title)}」</p>
-        <div class="course-controls">
-          ${lessonLink(recommended, '开始推荐课', true)}
-          <a class="course-action" href="./">去花园闯关</a>
-          ${review}
-        </div>
-      </div>
-      <img src="./assets/garden-hero.svg" alt="" width="420" height="300">
-    </section>
-    ${due.length ? `<section class="course-panel course-due" aria-labelledby="due-title">
-      <h2 id="due-title">今日复习</h2><p>换一组题，再试试上次用过的办法。</p>
-      <div class="course-controls">${due.map(item => reviewLink(item, `复习 · ${item.title}`)).join('')}</div>
+    ${due.length || review ? `<section class="course-panel course-due" aria-labelledby="due-title">
+      <h2 id="due-title">${due.length ? '今日复习' : '可以再练'}</h2><p>换一组题，再试试上次用过的办法。</p>
+      <div class="course-controls">${due.map(item => reviewLink(item, `复习 · ${item.title}`)).join('')}${review}</div>
     </section>` : ''}
     <nav class="course-stages" aria-label="学习阶段">
       ${courseStages.map(stage => `<a class="course-action" href="#course/${stage.id}"${stage === active ? ' aria-current="page"' : ''}>${stage.label}</a>`).join('')}
@@ -81,7 +69,7 @@ function renderMap(stageId) {
         <div><h2 id="stage-title">${courseText(active.title)}</h2><p>${courseText(active.description)}</p></div>
         <span class="course-note">已练 ${active.lessons.filter(item => readResult(item)).length} / ${active.lessons.length} 课</span>
       </div>
-      <div class="course-lessons">${active.lessons.map(courseCard).join('')}</div>
+      <div class="course-lessons">${active.lessons.map(item => courseCard(item, item === recommended)).join('')}</div>
       ${renderHomeActivity(active)}
     </section>`;
 }
@@ -99,6 +87,7 @@ courseRoot.addEventListener('toggle', ({ target }) => {
 }, true);
 
 function wrapLesson(content) {
+  gardenVoice.stop();
   const stage = lesson ? stageOf(lesson) : null;
   const inChallenge = mode === 'challenge';
   let back = `<a class="course-action" href="${stage ? `#course/${stage.id}` : '#course'}">回学习地图</a>`;
@@ -116,7 +105,7 @@ function renderExample() {
   wrapLesson(`<p class="course-kicker">先看一个例子</p>
     <h1 tabindex="-1">${courseText(title)}</h1><p>${courseText(goal)}</p>
     <div class="course-model">${renderCourseModel(example.model)}</div>
-    <p class="course-prompt">${courseText(example.text)}</p>
+    ${renderCourseReadout(example.text, '听例子')}
     <button type="button" class="primary course-action" data-action="start">开始练习</button>`);
 }
 
@@ -134,11 +123,42 @@ function renderInput(item) {
   </form>`;
 }
 
+function courseSpeechText(text) {
+  const words = {
+    '+': '加', '＋': '加', '−': '减', '-': '减', '－': '减', '×': '乘', '÷': '除以',
+    '=': '等于', '＝': '等于', '>': '大于', '＞': '大于', '<': '小于', '＜': '小于',
+    '□': '空格', '～': '到', '↑': '朝上', '↓': '朝下', '←': '朝左', '→': '朝右',
+    '↖': '朝左上', '↗': '朝右上', '↘': '朝右下', '↙': '朝左下', '○': '圆形', '│': '，镜线，',
+  };
+  return text.replace(/(\d+)\s*\/\s*(\d+)/g, '$2分之$1')
+    .replace(/(\d)\s*→\s*(?=\d)/g, '$1，')
+    .replace(/(\d{1,2}):(\d{2})/g, (_, hour, minute) => `${hour}点${minute === '00' ? '整' : `${Number(minute)}分`}`)
+    .replace(/[+＋−－×÷=＝>＞<＜□～↑↓←→↖↗↘↙○│-]/g, symbol => words[symbol]);
+}
+
+function renderCourseReadout(text, label, spoken = text) {
+  return `<div class="course-readout">
+    <div class="course-readout-line"><p class="course-prompt">${courseText(text)}</p>
+      <button type="button" class="course-action practice-hear" data-action="hear" data-speech="${courseText(courseSpeechText(spoken))}">${label}</button>
+    </div>
+    <span class="course-speech-status course-note" aria-live="polite"></span>
+  </div>`;
+}
+
 function renderQuestionBody(item) {
   options = shuffleOptions(item.choices ?? []);
-  return `<p class="course-prompt">${courseText(item.prompt)}</p>
+  const modelText = item.model?.kind === 'text' && !item.model.text.includes('├') ? item.model.text : '';
+  const spoken = modelText ? `${modelText}。${item.prompt}` : item.prompt;
+  return `${renderCourseReadout(item.prompt, '听题目', spoken)}
     <div class="course-model">${item.bundles ? renderBundleTray(item.bundles.ones) : renderCourseModel(item.model, true)}</div>
     <div class="course-controls">${renderInput(item)}</div>`;
+}
+
+const courseFeedbackFlower = '<img class="course-feedback-flower" src="./assets/count-flower.svg" alt="" width="28" height="28">';
+
+function renderCourseFeedback(message, kind, showFlower = true) {
+  const flower = kind === 'correct' && showFlower ? courseFeedbackFlower : '';
+  return `<span class="course-feedback course-feedback-${kind}">${flower}${courseText(message)}</span>`;
 }
 
 function renderPractice() {
@@ -150,7 +170,7 @@ function renderPractice() {
     <h1 tabindex="-1">${placing ? '找找学习起点' : courseText(lesson.title)}</h1>
     ${renderQuestionBody(item)}
     ${placing ? '<button type="button" class="course-action" data-action="unsure">还不确定</button>' : `
-    <p class="course-status" role="status"></p>
+    <p id="course-answer-status" class="course-status" role="status"></p>
     <p class="course-note" id="course-hint" hidden>${courseText(item.hint)}</p>
     <div class="course-controls">
       <button type="button" class="course-action" data-action="hint" aria-controls="course-hint" aria-expanded="false">看提示</button>
@@ -185,14 +205,21 @@ function checkAnswer(value, attempted) {
   showRetryChoice(buttons, value !== item.answer ? attempted : undefined);
   if (value !== item.answer) {
     usedHelp = true;
-    status.textContent = '再试一次，也可以看一个提示。';
+    status.innerHTML = renderCourseFeedback('再试一次，也可以看一个提示。', 'retry');
     return;
   }
 
   answered = true;
+  gardenVoice.stop();
   if (!usedHelp) independent += 1;
-  status.textContent = item.explanation;
-  status.classList.add('course-correct');
+  const correctChoice = attempted?.hasAttribute('data-option');
+  if (correctChoice) {
+    attempted.classList.add('is-correct');
+    attempted.setAttribute('aria-describedby', 'course-answer-status');
+    attempted.insertAdjacentHTML('beforeend', `<span class="course-choice-check" aria-hidden="true">✓</span>${courseFeedbackFlower}`);
+  }
+  status.innerHTML = `${renderCourseFeedback('答对啦！', 'correct', !correctChoice)}
+    <span class="course-explanation">${courseText(item.explanation)}</span>`;
   for (const control of courseRoot.querySelectorAll('[data-option], [data-line-value], [data-plot], [data-dot], [data-action="check-build"], .course-input, [type="submit"]')) {
     control.disabled = true;
   }
@@ -251,6 +278,13 @@ courseRoot.addEventListener('click', event => {
     button.setAttribute('aria-pressed', String(button.getAttribute('aria-pressed') !== 'true'));
   } else {
     switch (button.dataset.action) {
+      case 'hear': {
+        const status = button.closest('.course-readout').querySelector('.course-speech-status');
+        const onError = () => { status.textContent = '这次没有读出来，可以再点一次。'; };
+        status.textContent = '';
+        if (!gardenVoice.speak(button.dataset.speech, { onError })) onError();
+        break;
+      }
       case 'start':
         if (mode === 'review') practiceItems = makeReviewPractice(lesson.id, readReviewRecord(lesson.id)?.variant ?? 1);
         step = independent = 0;

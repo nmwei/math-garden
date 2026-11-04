@@ -26,7 +26,11 @@ test('从花园闯关页练完第一课，求助单独计入，刷新后保留�
   await link(page, '回学习地图').click();
   await page.reload();
   await expect(link(page, '看见几朵花').getByText('已练 · 可复习')).toBeVisible();
-  await expect(link(page, '开始推荐课')).toHaveAttribute('href', /#course\/lesson\/count-total$/);
+  const recommended = link(page, '每朵只数一次');
+  await expect(recommended).toHaveAccessibleDescription('推荐');
+  await recommended.click();
+  await expect(page).toHaveURL(/#course\/lesson\/count-total$/);
+  await expect(page.getByText('先看一个例子', { exact: true })).toBeVisible();
   await link(page, '花园闯关').click();
   await expect(page.getByRole('region', { name: '今天学什么' }).getByText('每朵只数一次', { exact: true })).toBeVisible();
   await expect(link(page, '练这一课')).toHaveAttribute('href', /#course\/practice\/count-total$/);
@@ -41,8 +45,9 @@ test('可以跨学段浏览，设备没有语音也能摆花和修改', async ({
     await expect(link(page, stage)).toBeVisible();
   }
   await link(page, '一年级').click();
-  await expect(link(page, '认识 0～10')).toBeVisible();
+  await expect(link(page, '认识 0～10')).toHaveAccessibleDescription('推荐');
   await link(page, '零基础').click();
+  await expect(link(page, '看见几朵花')).toHaveAccessibleDescription('推荐');
   await link(page, '照着数字摆花').click();
   await button(page, '开始练习').click();
 

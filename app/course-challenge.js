@@ -29,13 +29,14 @@ const courseChallenge = (() => {
   function renderQuestion() {
     const skill = path.skills[index];
     question = skill.questions[pair + Number(retry)];
-    const message = retry ? '换一道同类题，再试试。'
-      : results.length ? '做对啦，接着试下一项。' : '慢慢想，按自己的节奏来。';
+    const message = retry ? renderCourseFeedback('换一道同类题，再试试。', 'retry')
+      : results.length ? renderCourseFeedback('做对啦，接着试下一项。', 'correct')
+      : '慢慢想，按自己的节奏来。';
     wrapLesson(`
       <p class="course-kicker">${path.title} · 第 ${index + 1} 站</p>
-      <h1 tabindex="-1">${skill.title}</h1>
+      <h1 tabindex="-1" aria-describedby="challenge-message">${skill.title}</h1>
       <p class="course-progress">本关第 ${results.length + 1} / ${roundSize} 项</p>
-      <p class="course-note challenge-message">${message}</p>
+      <p class="course-note challenge-message" id="challenge-message">${message}</p>
       ${renderQuestionBody(question)}
       <button type="button" class="course-action" data-action="unsure">还不确定</button>`);
   }
@@ -71,6 +72,7 @@ const courseChallenge = (() => {
     const from = targetSkill ? `${path.id}/${targetSkill.id}` : path.id;
     wrapLesson(`<p class="course-kicker">${path.title}</p>
       <h1 tabindex="-1">${heading}</h1>
+      ${!gap && completed ? `<p class="challenge-message">${renderCourseFeedback('答对啦！', 'correct')}</p>` : ''}
       ${roundSize ? `<p class="course-prompt">本关完成 ${completed} / ${roundSize} 个挑战</p>` : ''}
       <p class="course-note">这条小路已完成 ${passed} / ${path.skills.length} 站</p>
       ${results.length ? `<ul class="challenge-results">${results.map(({ skill, outcome }) =>

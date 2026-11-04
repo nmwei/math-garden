@@ -14,7 +14,7 @@ function renderToday() {
   const start = document.querySelector('#today-start');
   start.href = `#course/${review ? 'review' : 'practice'}/${lesson.id}`;
   const firstLesson = !placement && lesson === courseLessons[0] && !readResult(lesson);
-  start.textContent = review ? '复习一下' : firstLesson ? '试一节' : '练这一课';
+  start.querySelector('.today-action-label').textContent = review ? '复习一下' : firstLesson ? '试一节' : '练这一课';
 }
 
 function renderChallengeHub() {
@@ -74,7 +74,7 @@ function sayInGarden(text) {
 }
 
 function refreshSoundSetting() {
-  const muted = !gardenPreferences.soundEnabled();
+  const muted = !gardenPreferences.soundEnabled() || !gardenVoice.supported();
   document.documentElement.classList.toggle('practice-muted', muted);
   if (muted) stopGardenSpeech();
 }

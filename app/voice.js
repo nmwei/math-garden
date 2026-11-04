@@ -3,6 +3,7 @@ const gardenVoice = (() => {
   const excludedNames = /^(Eddy|Flo|Grandma|Grandpa|Reed|Rocko|Sandy|Shelley)(?=$|[\s(（])/i;
   let preferred = '';
   let writeFailed = false;
+  let playbackId = 0;
 
   function selected() {
     if (writeFailed) return preferred;
@@ -37,30 +38,45 @@ const gardenVoice = (() => {
   }
 
   function stop() {
+    playbackId += 1;
     window.speechSynthesis?.cancel?.();
   }
 
   function speak(text, { onError, onEnd } = {}) {
     if (!text || !gardenPreferences.soundEnabled() || !supported()) return false;
     const voices = list();
-    const selectedUri = selected();
-    const voice = voices.find(item => item.voiceURI === selectedUri)
-      ?? voices.find(item => /^(zh|cmn)[-_]CN$/i.test(item.lang)) ?? voices[0];
+    const mainland = (voice) => /^(zh|cmn)[-_]CN$/i.test(voice.lang);
+    const local = voices.find(voice => voice.localService && mainland(voice))
+      ?? voices.find(voice => voice.localService);
+    const preferredUri = selected();
+    const preferredVoice = voices.find(voice => voice.voiceURI === preferredUri);
+    let voice = preferredVoice ?? local ?? voices.find(mainland) ?? voices[0];
     stop();
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = voice?.lang.replaceAll('_', '-') || 'zh-CN';
-    if (voice) utterance.voice = voice;
-    utterance.rate = 0.85;
-    if (onEnd) utterance.onend = onEnd;
-    if (onError) utterance.onerror = event => {
-      if (event.error !== 'canceled' && event.error !== 'interrupted') onError();
-    };
-    try {
-      window.speechSynthesis.speak(utterance);
-      return true;
-    } catch {
-      return false;
+    const id = playbackId;
+    if (navigator.onLine === false && voice?.localService === false) {
+      if (!local) return false;
+      voice = local;
     }
+
+    function play(voice, backup) {
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = voice?.lang.replaceAll('_', '-') || 'zh-CN';
+      if (voice) utterance.voice = voice;
+      utterance.rate = 0.85;
+      utterance.onend = () => { if (id === playbackId) onEnd?.(voice); };
+      utterance.onerror = ({ error }) => {
+        if (id !== playbackId || error === 'canceled' || error === 'interrupted') return;
+        if (!backup || !play(backup)) onError?.();
+      };
+      try {
+        window.speechSynthesis.speak(utterance);
+        return true;
+      } catch {
+        return backup ? play(backup) : false;
+      }
+    }
+
+    return play(voice, voice?.localService === false ? local : undefined);
   }
 
   return { list, selected, set, speak, stop, supported };

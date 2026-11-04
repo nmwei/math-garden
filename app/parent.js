@@ -17,7 +17,10 @@ function renderParentVoices() {
   const voices = gardenVoice.list();
   const preferred = gardenVoice.selected();
   voiceSelect.replaceChildren(new Option('自动选择普通话声音', ''));
-  for (const voice of voices) voiceSelect.add(new Option(`${voice.name} · ${voice.lang}`, voice.voiceURI));
+  for (const voice of voices) {
+    const source = voice.localService ? '本地' : '需联网';
+    voiceSelect.add(new Option(`${voice.name} · ${voice.lang} · ${source}`, voice.voiceURI));
+  }
   const missing = preferred && !voices.some(voice => voice.voiceURI === preferred);
   if (missing) voiceSelect.add(new Option('上次选择的声音暂不可用', preferred));
   voiceSelect.value = preferred;
@@ -59,7 +62,7 @@ previewVoice.addEventListener('click', () => {
   voiceStatus.textContent = '正在试听…';
   const started = gardenVoice.speak('你好，欢迎来到一二三小花园。一、二、三，我们开始吧！', {
     onError,
-    onEnd: () => { voiceStatus.textContent = '试听完成。'; },
+    onEnd: voice => { voiceStatus.textContent = voice ? `试听完成 · ${voice.name}` : '试听完成。'; },
   });
   if (!started) onError();
 });
@@ -70,7 +73,6 @@ const reloadPage = document.querySelector('#reload-page');
 const offlineStatus = document.querySelector('[data-offline-status]');
 const updateStatus = document.querySelector('[data-update-status]');
 let hasWaitingUpdate = false;
-const currentVersion = document.querySelector('[data-current-version]');
 
 const offlineLabels = {
   loading: '正在准备离线资源…',
@@ -88,7 +90,6 @@ const updateLabels = {
 
 gardenOffline.subscribe(state => {
   offlineStatus.textContent = state.ready ? '已准备好，可离线练习。' : offlineLabels[state.status] ?? offlineLabels.loading;
-  currentVersion.textContent = state.version ?? '待确认';
   prepareOffline.hidden = state.status !== 'error';
   checkUpdate.disabled = state.status === 'unsupported' || state.status === 'loading'
     || state.checking || state.update === 'applying';
@@ -106,6 +107,38 @@ reloadPage.addEventListener('click', () => {
 
 const parentSettings = document.querySelector('#parent-settings');
 const challengeRecords = document.querySelector('#challenge-records');
+const resetProgressButton = document.querySelector('#reset-progress');
+const resetProgressDialog = document.querySelector('#reset-progress-dialog');
+const resetProgressToast = document.querySelector('#reset-progress-toast');
+const resetProgressError = document.querySelector('#reset-progress-error');
+let resetProgressToastTimer;
+
+function clearResetProgressToast() {
+  window.clearTimeout(resetProgressToastTimer);
+  resetProgressToast.textContent = '';
+}
+
+resetProgressButton.addEventListener('click', () => {
+  clearResetProgressToast();
+  resetProgressError.textContent = '';
+  resetProgressDialog.showModal();
+});
+document.querySelector('#confirm-reset-progress').addEventListener('click', () => {
+  if (!resetLearningProgress()) {
+    resetProgressError.textContent = '暂时无法清除所有学习记录，请再试一次。';
+    return;
+  }
+  resetProgressDialog.close();
+  resetProgressToast.textContent = '学习进度已重置';
+  resetProgressToastTimer = window.setTimeout(clearResetProgressToast, 3000);
+});
+resetProgressDialog.addEventListener('close', () => {
+  if (location.hash === '#parent') resetProgressButton.focus();
+});
+window.addEventListener('hashchange', () => {
+  if (resetProgressDialog.open) resetProgressDialog.close();
+  clearResetProgressToast();
+});
 
 function renderChallengeRecords() {
   if (challengeRecords.hidden) return;
