@@ -254,6 +254,7 @@ test('家长确认后可离线重置学习进度，保留设备设置和离线�
     'math-garden:review:count-total': JSON.stringify({ streak: 1, variant: 1, practiceOn: '2020-01-01', reviewOn: '2020-01-02' }),
     'math-garden:placement:v1': JSON.stringify('bridge-missing-part'),
     'math-garden:challenge:v1:number:count-total': JSON.stringify({ attempts: 1, outcome: 'independent' }),
+    'math-garden:workshop:mixed': '2',
   };
   const preferences = {
     'math-garden:sound-enabled': 'false',
@@ -296,12 +297,12 @@ test('家长确认后可离线重置学习进度，保留设备设置和离线�
   await page.reload();
   await expect(ready).toBeVisible();
   await expect(button(page, '练习声音')).toHaveAttribute('aria-pressed', 'false');
-  expect(Object.values(await readStorage(Object.keys(learning)))).toEqual([null, null, null, null]);
+  expect(Object.values(await readStorage(Object.keys(learning)))).toEqual(Object.keys(learning).map(() => null));
   expect(await readStorage(Object.keys(preferences))).toEqual(preferences);
   await navLink(page, '花园闯关').click();
   await expect(page.getByRole('link', { name: '试一节' })).toHaveAttribute('href', '#course/practice/notice-small');
   const numbers = page.getByRole('article', { name: '数与计算' });
-  await expect(numbers.getByText('已完成 0 / 16 站')).toBeVisible();
+  await expect(numbers.getByText('已完成 0 / 18 站')).toBeVisible();
   await numbers.getByRole('link', { name: '看路线' }).click();
   await expect(page.getByRole('link', { name: '挑战这一站' })).toHaveAttribute('href', '#course/challenge/number/count-total');
 });
@@ -379,10 +380,14 @@ test('子路径部署中新版等待家长确认，加载后保留原声音设�
     const firstLesson = page.getByRole('link', { name: '看见几朵花', exact: true });
     await firstLesson.click();
     await button(page, '开始练习').click();
-    for (const [index, answer] of ['1', '3', '2'].entries()) {
+    for (const answer of ['1', '3', '2', '2']) {
       await button(page, answer).click();
-      await button(page, index < 2 ? '下一题' : '看练习结果').click();
+      await button(page, '下一题').click();
     }
+    await button(page, '第 1 格').click();
+    await button(page, '第 2 格').click();
+    await button(page, '放好了').click();
+    await button(page, '看练习结果').click();
     await expect(heading(page, '这一课练完啦')).toBeVisible();
     await openParent(page);
 

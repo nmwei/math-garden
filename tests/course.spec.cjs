@@ -16,12 +16,26 @@ test('从花园闯关页练完第一课，求助单独计入，刷新后保留�
   await button(page, '下一题').click();
   await button(page, '看提示').click();
   await expect(page.getByText('从一边点到另一边，一朵花只点一次。')).toBeVisible();
+  await button(page, '看一遍怎么做').click();
+  const method = page.getByRole('region', { name: '回看例题的方法' });
+  await expect(method.getByText('这是一朵，那也是一朵。两朵在一起，用 2 表示。')).toBeVisible();
+  const solution = method.getByText('一、二、三。最后数到 3，一共三朵。', { exact: true });
+  await expect(solution).toBeHidden();
+  await method.getByText('看看这道题的解法', { exact: true }).click();
+  await expect(solution).toBeVisible();
   await button(page, '3').click();
   await button(page, '下一题').click();
   await button(page, '2').click();
+  await button(page, '下一题').click();
+  await expect(page.getByText('第 4 / 5 题', { exact: true })).toBeVisible();
+  await button(page, '2').click();
+  await button(page, '下一题').click();
+  await button(page, '第 1 格').click();
+  await button(page, '第 2 格').click();
+  await button(page, '放好了').click();
   await button(page, '看练习结果').click();
   await expect(heading(page, '这一课练完啦')).toBeVisible();
-  await expect(page.getByText('本次首次独立答对 2 / 3 题', { exact: true })).toBeVisible();
+  await expect(page.getByText('本次首次独立答对 4 / 5 题', { exact: true })).toBeVisible();
 
   await link(page, '回学习地图').click();
   await page.reload();
@@ -31,6 +45,10 @@ test('从花园闯关页练完第一课，求助单独计入，刷新后保留�
   await recommended.click();
   await expect(page).toHaveURL(/#course\/lesson\/count-total$/);
   await expect(page.getByText('先看一个例子', { exact: true })).toBeVisible();
+  const newExample = page.getByRole('region', { name: '换个例子想一想' });
+  await expect(newExample).toBeVisible();
+  await newExample.getByText('看看怎么想', { exact: true }).click();
+  await expect(newExample.locator('details')).toHaveAttribute('open', '');
   await link(page, '花园闯关').click();
   await expect(page.getByRole('region', { name: '今天学什么' }).getByText('每朵只数一次', { exact: true })).toBeVisible();
   await expect(link(page, '练这一课')).toHaveAttribute('href', /#course\/practice\/count-total$/);

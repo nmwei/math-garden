@@ -1,17 +1,20 @@
-const VERSION = '1.0.28';
+const VERSION = '1.0.30';
 const scope = self.registration.scope;
 const prefix = `math-garden:app:${encodeURIComponent(scope)}:`;
 const cacheName = `${prefix}${VERSION}`;
 const homeUrl = new URL('index.html', scope).href;
 const files = [
   'index.html', 'manifest.webmanifest',
-  'app/styles.css', 'app/shapes.css', 'app/patterns.css', 'app/course.css', 'app/parent.css',
+  'app/styles.css', 'app/shapes.css', 'app/patterns.css', 'app/course.css', 'app/course-workshop.css', 'app/parent.css',
   'app/main.js', 'app/counting.js', 'app/choice-game.js', 'app/shapes.js', 'app/patterns.js',
+  'app/number-games.js', 'app/number-games.css',
   'app/garden-ui.js', 'app/preferences.js', 'app/offline.js', 'app/shell.js', 'app/voice.js', 'app/parent.js',
   'app/course.js', 'app/course-models.js', 'app/course-memory.js', 'app/course-study.js', 'app/course-manipulatives.js',
   'app/course-foundation.js', 'app/course-grade1.js', 'app/course-grade2.js', 'app/course-grade3.js',
   'app/course-bridge.js', 'app/course-extensions.js', 'app/course-variants.js',
+  'app/course-enrichment.js', 'app/course-teaching.js', 'app/course-practice.js',
   'app/challenge-paths.js', 'app/course-challenge.js',
+  'app/course-story-workshop.js', 'app/course-fraction-workshop.js', 'app/course-workshop.js',
   'assets/icon.svg', 'assets/icon-180.png', 'assets/icon-192.png', 'assets/icon-512.png',
   'assets/garden-hero.svg', 'assets/count-flower.svg',
 ].map(path => new URL(path, scope).href);

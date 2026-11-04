@@ -11,10 +11,13 @@
   <link rel="stylesheet" href="./app/styles.css">
   <link rel="stylesheet" href="./app/shapes.css">
   <link rel="stylesheet" href="./app/patterns.css">
+  <link rel="stylesheet" href="./app/number-games.css">
   <link rel="stylesheet" href="./app/course.css">
+  <link rel="stylesheet" href="./app/course-workshop.css">
   <link rel="stylesheet" href="./app/parent.css">
   <script src="./app/shapes.js" defer></script>
   <script src="./app/patterns.js" defer></script>
+  <script src="./app/number-games.js" defer></script>
   <script src="./app/choice-game.js" defer></script>
   <script src="./app/counting.js" defer></script>
   <script src="./app/preferences.js" defer></script>
@@ -29,12 +32,18 @@
   <script src="./app/course-grade3.js" defer></script>
   <script src="./app/course-bridge.js" defer></script>
   <script src="./app/course-extensions.js" defer></script>
+  <script src="./app/course-enrichment.js" defer></script>
+  <script src="./app/course-teaching.js" defer></script>
   <script src="./app/course-variants.js" defer></script>
+  <script src="./app/course-practice.js" defer></script>
   <script src="./app/course-memory.js" defer></script>
   <script src="./app/course-study.js" defer></script>
   <script src="./app/course-manipulatives.js" defer></script>
   <script src="./app/challenge-paths.js" defer></script>
   <script src="./app/course-challenge.js" defer></script>
+  <script src="./app/course-story-workshop.js" defer></script>
+  <script src="./app/course-fraction-workshop.js" defer></script>
+  <script src="./app/course-workshop.js" defer></script>
   <script src="./app/course.js" defer></script>
   <script src="./app/parent.js" defer></script>
   <script src="./app/main.js" defer></script>
@@ -107,6 +116,35 @@
             <path d="M29 44C15 45 7 36 8 24c15-2 23 7 21 20Z" fill="#b6c5a1"/>
             <path d="M27 53c2-12 10-21 20-29" fill="none" stroke="#54785c" stroke-width="2.5" stroke-linecap="round"/>
             <circle cx="63" cy="46" r="5" fill="#d8a1ab"/>
+          </svg>
+        </button>
+        <button id="start-compare" class="activity" type="button" aria-labelledby="compare-name" aria-describedby="compare-copy">
+          <span class="activity-copy">
+            <strong id="compare-name">哪边更多</strong>
+            <small id="compare-copy">一朵对一朵，比比两边的花。</small>
+            <span class="activity-action" aria-hidden="true">去比多少 →</span>
+          </span>
+          <svg class="activity-art" aria-hidden="true" viewBox="0 0 76 62">
+            <circle cx="19" cy="20" r="8" fill="#8fac98"/>
+            <circle cx="38" cy="20" r="8" fill="#8fac98"/>
+            <path d="M12 31h51" stroke="#b9cbc2" stroke-linecap="round" stroke-width="2"/>
+            <circle cx="19" cy="44" r="8" fill="#d9ad77"/>
+            <circle cx="38" cy="44" r="8" fill="#d9ad77"/>
+            <circle cx="57" cy="44" r="8" fill="#d9ad77"/>
+          </svg>
+        </button>
+        <button id="start-compose" class="activity" type="button" aria-labelledby="compose-name" aria-describedby="compose-copy">
+          <span class="activity-copy">
+            <strong id="compose-name">凑满花坛</strong>
+            <small id="compose-copy">点点空格，看看离 5 或 10 还差几朵。</small>
+            <span class="activity-action" aria-hidden="true">去添花朵 →</span>
+          </span>
+          <svg class="activity-art" aria-hidden="true" viewBox="0 0 76 62">
+            <rect x="4" y="23" width="68" height="17" rx="4" fill="#fff8ee" stroke="#bd987d" stroke-width="1.5"/>
+            <path d="M17.6 23v17m13.6-17v17m13.6-17v17m13.6-17v17" stroke="#bd987d" stroke-width="1.5"/>
+            <circle cx="11" cy="31.5" r="4" fill="#8da684"/>
+            <circle cx="24.4" cy="31.5" r="4" fill="#8da684"/>
+            <circle cx="38" cy="31.5" r="4" fill="#8da684"/>
           </svg>
         </button>
       </div>

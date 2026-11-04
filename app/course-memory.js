@@ -1,5 +1,5 @@
 const courseMemory = new Map();
-const learningRecordKey = /^math-garden:(course|review|placement|challenge):/;
+const learningRecordKey = /^math-garden:(course|review|placement|challenge|workshop):/;
 
 function readCourseMemory(key) {
   if (courseMemory.has(key)) return courseMemory.get(key);

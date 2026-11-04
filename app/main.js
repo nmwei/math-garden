@@ -62,7 +62,7 @@ function showGardenSection(active, focus) {
 function showGameList(focus, completed = false) {
   gameListStatus.hidden = !completed;
   showGardenSection(games, focus);
-  gameListStatus.textContent = completed ? '三题都完成啦！' : '';
+  gameListStatus.textContent = completed ? '这一轮完成啦！' : '';
 }
 
 function stopGardenSpeech() {

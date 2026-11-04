@@ -182,6 +182,8 @@ h1 {
 }
 .activity:nth-child(2) { background: #f4ecdb; border-color: #e9dcc2; }
 .activity:nth-child(3) { background: #eeebf3; border-color: #e2daec; }
+.activity:nth-child(4) { background: #e9f0ed; border-color: #ceded5; }
+.activity:nth-child(5) { background: #f5eae3; border-color: #ead9cc; }
 .activity:enabled:hover { border-color: var(--leaf); }
 .activity-copy > * { display: block; }
 .activity strong { font-size: clamp(1.25rem, 2.5vw, 1.6rem); }

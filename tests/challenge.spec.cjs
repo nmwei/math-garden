@@ -37,6 +37,10 @@ test('闯关分路线记录，同类题复核后推荐课程，练完可换题�
   await button(page, '第 1 格').click();
   await button(page, '第 2 格').click();
   await button(page, '放好了').click();
+  await button(page, '下一题').click();
+  await button(page, '5').click();
+  await button(page, '下一题').click();
+  await button(page, '3').click();
   await button(page, '看练习结果').click();
   await link(page, '回这一站再试').click();
 
@@ -55,7 +59,7 @@ test('闯关分路线记录，同类题复核后推荐课程，练完可换题�
   await expect(heading(page, '数出一共有多少')).toBeVisible();
   await expect(page.locator('[data-dot]')).toHaveCount(3);
   await button(page, '还不确定').click();
-  await expect(page.getByText('这条小路已完成 3 / 16 站')).toBeVisible();
+  await expect(page.getByText('这条小路已完成 3 / 18 站')).toBeVisible();
   await link(page, '回路线').click();
   await expect(first).toContainText('换题后做对');
   await expect(first).toHaveAttribute('open');
@@ -63,7 +67,7 @@ test('闯关分路线记录，同类题复核后推荐课程，练完可换题�
   await expect(page.locator('[data-dot]')).toHaveCount(5);
   await link(page, '回路线').click();
   await link(page, '回花园闯关').click();
-  await expect(numbers.getByText('已完成 3 / 16 站')).toBeVisible();
+  await expect(numbers.getByText('已完成 3 / 18 站')).toBeVisible();
 });
 
 test('后面的站可以先看对应课程，已有的跨站记录仍可回练', async ({ page }) => {
@@ -97,10 +101,12 @@ test('后面的站可以先看对应课程，已有的跨站记录仍可回练',
   await expect(link(page, '查看闯关记录')).toHaveCount(0);
 
   await link(page, '花园闯关').click();
-  await expect(shapes.getByText('已完成 1 / 9 站')).toBeVisible();
+  await expect(shapes.getByText('已完成 1 / 10 站')).toBeVisible();
   await expect(shapes.getByText('第 1 站 · 用直边认图形')).toBeVisible();
   await link(shapes, '继续闯关').click();
   await expect(heading(page, '用直边认图形')).toBeVisible();
   await button(page, '三角形').click();
+  await expect(heading(page, '沿拼好的图形外边认形状')).toBeVisible();
+  await button(page, '长边比短边长的长方形').click();
   await expect(heading(page, '区分平面和立体图形')).toBeVisible();
 });

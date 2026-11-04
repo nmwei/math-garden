@@ -7,6 +7,10 @@ const patternFigures = {
     label: '叶子',
     drawing: '<path d="M8 28C5 16 17 7 35 7c0 17-8 27-21 25Z"/><path d="M8 34c5-7 11-12 20-20" fill="none" stroke="#3e644d" stroke-width="2" stroke-linecap="round"/>',
   },
+  C: {
+    label: '果子',
+    drawing: '<circle cx="22" cy="23" r="11" fill="#d6a0aa"/><path d="M22 14c2-6 6-8 11-8-1 5-4 9-11 8Z" fill="#729272"/>',
+  },
 };
 
 function patternFigure(symbol) {
@@ -16,9 +20,11 @@ function patternFigure(symbol) {
 function patternQuestion(unit, extra = 0, order = 'AB') {
   const sequence = unit.repeat(2) + unit.slice(0, extra);
   const names = [...sequence].map(symbol => patternFigures[symbol].label);
+  const group = names.slice(0, unit.length).join('、');
   return {
     unit, extra, options: [...order], answer: order.indexOf(unit[extra]),
     spokenPrompt: `${names.join('、')}。下一格放什么？`,
+    success: `「${group}」一组一组地重复，下一格接${patternFigures[unit[extra]].label}。`,
   };
 }
 
@@ -32,12 +38,13 @@ function patternStep(symbol, position) {
 const patternGame = {
   title: '接着排一排',
   instruction: '看看花叶小路，点一点，下一格放什么？',
-  success: '排对啦，小路接上了！',
   hintText: ['看看框起来的两组，它们一样吗？', '跟着亮起来的花叶读一遍，再接下去。'],
   demo: patternQuestion('AB', 1, 'BA'),
   questions: [
-    [patternQuestion('AB'), patternQuestion('AB', 1), patternQuestion('BA', 0, 'BA')],
-    [patternQuestion('AAB', 2), patternQuestion('ABB', 1, 'BA'), patternQuestion('AAB', 0, 'BA')],
+    [patternQuestion('AB'), patternQuestion('AB', 1), patternQuestion('BA', 0, 'BA'),
+      patternQuestion('AAB', 1), patternQuestion('ABB', 2)],
+    [patternQuestion('AAB', 2), patternQuestion('ABB', 1, 'BA'), patternQuestion('AAB', 0, 'BA'),
+      patternQuestion('ABC', 1, 'CAB'), patternQuestion('BCA', 2, 'ABC')],
   ],
   render(question, board, optionButtons) {
     const { unit, extra, options } = question;

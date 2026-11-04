@@ -1,5 +1,5 @@
 const courseStages = [foundation, gradeOne, gradeTwo, gradeThree];
-for (const { stage, after, lesson: addition } of [...bridgeLessons, ...courseExtensions]) {
+for (const { stage, after, lesson: addition } of [...bridgeLessons, ...courseExtensions, ...courseEnrichment]) {
   const lessons = courseStages.find(group => group.id === stage).lessons;
   const previous = lessons.findIndex(item => item.id === after);
   lessons.splice(previous + 1, 0, addition);
@@ -115,9 +115,16 @@ function dailyHomeActivity(stage, date = new Date()) {
 
 function readResult(item) {
   const result = readCourseMemory(`math-garden:course:${item.id}`);
-  if (result?.total === item.practice.length && Number.isInteger(result.independent)
-    && result.independent >= 0 && result.independent <= result.total) return result;
+  if (Number.isInteger(result?.total) && result.total >= item.practice.length && result.total <= Math.max(5, item.practice.length)
+    && Number.isInteger(result.independent) && result.independent >= 0 && result.independent <= result.total) {
+    return { ...result, attempts: Number.isSafeInteger(result.attempts) && result.attempts > 0 ? result.attempts : 1 };
+  }
   return null;
+}
+
+function spacedCoursePractice(lesson, variant) {
+  const lastStudyAttempt = Math.max(0, (readResult(lesson)?.attempts ?? 1) - 1);
+  return makeReviewPractice(lesson.id, variant) ?? makeCourseReview(lesson, variant, lastStudyAttempt);
 }
 
 function getStudyPlan(stageId) {
@@ -126,11 +133,14 @@ function getStudyPlan(stageId) {
   const placement = readPlacement();
   const startingPoint = pool.findIndex(item => item.id === placement);
   const nextLesson = pool.slice(Math.max(0, startingPoint)).find(item => !readResult(item));
-  const revisit = pool.find(item => readResult(item)?.independent < item.practice.length);
+  const revisit = pool.find(item => {
+    const result = readResult(item);
+    return result && result.independent < result.total;
+  });
   const today = localDateKey();
   const due = courseLessons.filter(item => {
     const record = readReviewRecord(item.id);
-    return record && record.reviewOn <= today && makeReviewPractice(item.id, record.variant);
+    return record && record.reviewOn <= today && spacedCoursePractice(item, record.variant)?.length;
   }).slice(0, 3);
   return { selected, placement, recommended: nextLesson ?? revisit ?? pool[0], revisit, due };
 }
@@ -162,8 +172,9 @@ function readReviewRecord(id) {
   return null;
 }
 
-function scheduleCourseReview(id, allIndependent, date = new Date()) {
-  if (!makeReviewPractice(id, 1)) return;
+function scheduleCourseReview(lesson, allIndependent, date = new Date()) {
+  if (!spacedCoursePractice(lesson, 1)?.length) return;
+  const id = lesson.id;
   const old = readReviewRecord(id);
   const practiceOn = localDateKey(date);
   const streak = allIndependent

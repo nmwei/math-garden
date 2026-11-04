@@ -1,0 +1,96 @@
+.number-compare {
+  display: grid;
+  gap: .45rem;
+  width: min(100%, 18rem);
+  margin: 1rem auto;
+}
+
+.number-compare-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: .5rem;
+  color: var(--muted);
+  text-align: start;
+}
+
+.number-compare-flowers {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: .2rem;
+}
+
+.number-compare-flowers span {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  aspect-ratio: 1;
+  border: 1px solid transparent;
+  border-radius: .5rem;
+}
+
+.number-compare-flowers img,
+.number-frame img {
+  display: block;
+  width: min(100%, 2.15rem);
+  height: auto;
+}
+
+.number-compare[data-spaced]:not([data-pair-level]) .number-compare-row:first-child .number-compare-flowers {
+  display: flex;
+  justify-content: space-between;
+}
+
+.number-compare[data-spaced]:not([data-pair-level]) .number-compare-row:first-child .number-compare-flowers span {
+  width: calc((100% - .8rem) / 5);
+}
+
+.number-compare[data-pair-level] .number-compare-flowers span {
+  background: #fffdf4;
+  border-color: var(--border);
+}
+
+.number-compare[data-pair-level="2"] .number-compare-flowers span[data-extra] {
+  background: #f7ecd1;
+  border: 2px dashed #9a773f;
+}
+
+.number-frame {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: .3rem;
+  width: min(100%, 17rem);
+  margin: 1rem auto;
+}
+
+.number-frame .number-frame-cell {
+  display: grid;
+  place-items: center;
+  min-width: 0;
+  min-height: 44px;
+  aspect-ratio: 1;
+  padding: 0;
+  background: #fffdf4;
+  border: 1px solid var(--border);
+  border-radius: .55rem;
+}
+
+.number-frame button.number-frame-cell {
+  background: #f3eedb;
+  border: 2px dashed #9a885e;
+}
+
+.number-frame button[aria-pressed="false"] img { visibility: hidden; }
+
+.number-frame button[aria-pressed="true"] {
+  background: #e1ecd8;
+  border-color: var(--leaf);
+}
+
+.number-frame[data-hint] button[aria-pressed="false"] { background: #f9edce; }
+.number-frame[data-hint="2"] button { box-shadow: 0 0 0 1px #9a885e; }
+
+#choice-game[data-game="compare"] #choice-options button {
+  padding-inline: .65rem;
+  font-size: clamp(.9rem, 3.4vw, 1.1rem);
+}

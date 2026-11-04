@@ -42,6 +42,12 @@ const challengePaths = [
         ({ prompt: `有 ${rows} 排花，每排 ${cols} 朵。一共有几朵？`, answer: rows * cols, choices: [rows * cols, rows + cols, (rows + 1) * cols] })),
       challengeSkill('share-and-group', '把物品平均分', [[18, 3], [24, 4], [20, 5], [28, 7]], ([total, groups]) =>
         challengeNumber(`把 ${total} 颗种子平均放进 ${groups} 个花盆，每盆几颗？`, total / groups)),
+      challengeSkill('g2-multiply-from-known-facts', '用会的乘法算新的组数', [[7, 8, 5], [6, 9, 5], [9, 5, 10], [8, 4, 10]], ([groups, size, known]) => {
+        const base = known * size;
+        const answer = groups * size;
+        return { prompt: `每盘都放 ${size} 枚花签。${known} 盘一共有 ${base} 枚，换成 ${groups} 盘一共有几枚？`,
+          answer, choices: [base, answer, base + groups - known] };
+      }),
       challengeSkill('large-numbers', '估到最接近的整千数', [1260, 3780, 6190, 8540], value => {
         const lower = Math.floor(value / 1000) * 1000;
         return { prompt: `${value} 最接近哪个整千数？`, answer: Math.round(value / 1000) * 1000, choices: [lower, lower + 1000, lower + 2000] };
@@ -52,6 +58,11 @@ const challengePaths = [
         const quotient = Math.floor(a / b);
         return { prompt: `${a} 颗种子每 ${b} 颗装一袋，能装满几袋？还剩几颗？`,
           answer: `${quotient} 袋，剩 ${a % b} 颗`, choices: [`${quotient} 袋，剩 ${a % b} 颗`, `${quotient} 袋，剩 0 颗`, `${quotient - 1} 袋，剩 ${a % b} 颗`] };
+      }),
+      challengeSkill('g3-remainder-in-context', '想想要不要多准备一组', [[29, 6], [21, 4], [34, 8], [42, 5]], ([total, size]) => {
+        const answer = Math.ceil(total / size);
+        return { prompt: `有 ${total} 把小铲子，每只箱子最多装 ${size} 把。要把小铲子全部收好，至少需要几只箱子？`,
+          answer, choices: [answer - 1, answer, answer + 1] };
       }),
       challengeSkill('first-fractions', '用分数表示涂色部分', [[5, 2], [7, 3], [8, 5], [6, 1]], ([parts, filled]) =>
         ({ prompt: '涂色部分占整个长条的几分之几？', answer: `${filled}/${parts}`,
@@ -77,6 +88,11 @@ const challengePaths = [
         const names = { circle: '圆形', triangle: '三角形', square: '正方形' };
         return { prompt: '照这样接着排，下一个是什么？', model: { kind: 'shapes', items: [...unit, ...unit, ...unit.slice(0, -1)] },
           answer: names[unit.at(-1)], choices: Object.values(names) };
+      }),
+      challengeSkill('compose-shapes', '沿拼好的图形外边认形状', [[2, 3], [3, 3], [3, 2], [2, 2]], ([rows, cols]) => {
+        const choices = ['四边一样长的正方形', '长边比短边长的长方形', '有三条边的三角形'];
+        return { prompt: '把一样大的方纸片挨紧拼好。只看整个图形的外边，拼成了什么？',
+          answer: choices[rows === cols ? 0 : 1], choices, model: { kind: 'grid', rows, cols, outline: true } };
       }),
       challengeSkill('g1-shape-groups', '区分平面和立体图形', [
         ['圆柱', 'cylinder'], ['正方体', 'cube'], ['球', 'sphere'], ['圆形', 'circle'],
@@ -119,17 +135,34 @@ const challengePaths = [
       challengeSkill('g1-time-and-length', '从钟面上读整时', [3, 8, 6, 11], hour =>
         ({ prompt: '钟面上是几点整？', answer: `${hour} 点`, choices: [`${hour - 1} 点`, `${hour} 点`, `${hour + 1} 点`],
           model: { kind: 'clock', hour, minute: 0 } })),
+      challengeSkill('g1-make-a-tally', '每看见一张就记一笔', [
+        ['叶、花、叶、花、花', 2], ['叶、叶、花、叶、花', 3],
+        ['花、叶、叶、花、叶、叶', 4], ['叶、花、叶、叶、叶、花、叶', 5],
+      ], ([cards, answer]) => challengeNumber('每翻出一张叶片卡就在叶片那一行记一笔。叶片这一行记了几笔？',
+        answer, { kind: 'text', text: cards })),
       challengeSkill('clock-coins', '读出几点半', [4, 7, 2, 10], hour =>
         ({ prompt: '现在是几点半？', answer: `${hour} 点半`, choices: [`${hour - 1} 点半`, `${hour} 点半`, `${hour + 1} 点半`],
           model: { kind: 'clock', hour, minute: 30 } })),
       challengeSkill('measure-and-turn', '为物品选合适的长度单位', [['一张课桌长约 1', '米'], ['一块橡皮长约 4', '厘米'], ['小路长约 6', '米'], ['一片叶子长约 8', '厘米']], ([object, answer]) =>
         ({ prompt: `${object} 什么？`, answer, choices: ['米', '厘米', '千克'] })),
+      challengeSkill('g2-weigh-and-compare', '换成同样的单位比轻重', [850, 1200, 730, 1000], grams =>
+        ({ prompt: `甲盆土重 1 千克，乙盆土重 ${grams} 克。哪一盆更重？`,
+          answer: grams === 1000 ? '一样重' : grams < 1000 ? '甲盆' : '乙盆', choices: ['甲盆', '乙盆', '一样重'] })),
+      challengeSkill('g2-build-a-bar-chart', '给一类投票填出条形', [
+        ['菜园、凉亭、菜园、菜园、凉亭', '菜园', 3], ['凉亭、菜园、菜园、凉亭、菜园、凉亭、菜园', '菜园', 4],
+        ['菜园、凉亭、菜园、凉亭、菜园', '凉亭', 2], ['凉亭、凉亭、菜园、凉亭、凉亭、菜园、凉亭', '凉亭', 5],
+      ], ([votes, label, answer]) =>
+        ({ prompt: `依次收到这些票。每格代表 1 票。请给「${label}」填出条形，点一格可以一起填满它左边的格。`,
+          answer, model: { kind: 'text', text: votes }, build: { max: 5, token: 'bar', label } })),
       challengeSkill('g2-survey-and-chart-key', '读懂每格代表多少', [[3, 2], [4, 2], [2, 5], [3, 5]], ([cells, scale]) =>
         ({ prompt: `图里每格代表 ${scale} 人，有多少人喜欢浇花？`, answer: cells * scale,
           choices: [cells, cells * scale, (cells + 1) * scale], model: challengeBars([['浇花', cells], ['种花', cells + 1]]) })),
       challengeSkill('g3-measure-intervals', '用两个刻度之间的距离量长度', [[2, 7], [3, 9], [4, 8], [1, 8]], ([start, end]) =>
         challengeNumber(`花签左端在 ${start} 厘米，右端在 ${end} 厘米。它有多长？`, end - start,
           { kind: 'line', min: 0, max: 10, marks: [start, end], jump: [start, end] })),
+      challengeSkill('g3-measure-capacity', '用毫升计算还剩多少水', [150, 260, 350, 450], poured =>
+        ({ prompt: `水罐里有 1 升水，倒给小苗 ${poured} 毫升。还剩多少毫升？`,
+          answer: 1000 - poured, choices: [poured, 1000 + poured, 1000 - poured] })),
       challengeSkill('read-data', '用图表比较相差多少', [[7, 4], [8, 3], [6, 2], [9, 3]], ([a, b]) =>
         challengeNumber('圆花盆比方花盆多几个？', a - b, challengeBars([['圆花盆', a], ['方花盆', b]]))),
       challengeSkill('garden-guide', '在米和厘米之间换算', [[1, 20], [2, 30], [3, 50], [4, 15]], ([metres, centimetres]) =>

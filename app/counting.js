@@ -14,7 +14,7 @@ function setupCounting() {
   const next = document.querySelector('#next-counting');
   const help = document.querySelector('#help-counting');
   const hear = document.querySelector('#count-hear');
-  const amounts = [[1, 3, 5], [2, 5, 4]];
+  const amounts = [1, 3, 2, 4, 5];
   const choices = [[1, 3, 2], [3, 4, 2], [2, 3, 4], [5, 4, 2], [3, 4, 5]];
   const numerals = ['一', '二', '三', '四', '五'];
   const countPrompt = '点一朵花，数一个数。';
@@ -44,7 +44,7 @@ function setupCounting() {
     const options = shuffleOptions(choices[amount - 1]);
     answerButtons.forEach((button, index) => { button.textContent = options[index]; });
     showRetryChoice(answerButtons);
-    flowerBed.classList.toggle('scattered', Boolean(round && questionIndex === 2));
+    flowerBed.classList.toggle('scattered', Boolean(round && amount > 1 && questionIndex >= 2));
     flowerBed.classList.remove('celebrate');
     flowerBed.hidden = false;
     progress.hidden = !round;
@@ -117,8 +117,7 @@ function setupCounting() {
   replay.addEventListener('click', startDemo);
   skip.addEventListener('click', () => finishDemo('准备好啦，一起来数花吧。'));
   begin.addEventListener('click', () => {
-    round = amounts[roundNumber % amounts.length];
-    roundNumber += 1;
+    round = roundNumber ? shuffleOptions(amounts) : amounts;
     questionIndex = 0;
     showQuestion(round[questionIndex]);
   });
@@ -131,6 +130,7 @@ function setupCounting() {
   });
   function returnToGames(completed = false) {
     stopFeedback();
+    if (completed) roundNumber += 1;
     showGameList(entry, completed);
   }
   document.querySelector('#count-back').addEventListener('click', () => returnToGames());

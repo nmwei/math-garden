@@ -87,6 +87,10 @@ test('完成一课后隔日出现复习，复习采用另一组题', async ({ pa
   await button(page, '4').click();
   await button(page, '下一题').click();
   await button(page, '5').click();
+  await button(page, '下一题').click();
+  await button(page, '4').click();
+  await button(page, '下一题').click();
+  await button(page, '4').click();
   await button(page, '看练习结果').click();
   await expect(heading(page, '这一课练完啦')).toBeVisible();
   await link(page, '回学习地图').click();
@@ -102,6 +106,60 @@ test('完成一课后隔日出现复习，复习采用另一组题', async ({ pa
   await link(page, '复习一下').click();
   await expect(page).toHaveURL(/#course\/review\/count-total$/);
   await expect(page.getByText('小花藏在几排里，一共有几朵？', { exact: true })).toBeVisible();
+});
+
+test('重练会换题，新课的间隔复习也有独立题目', async ({ page }) => {
+  await page.goto('/#course/lesson/g3-measure-capacity');
+  await button(page, '开始练习').click();
+  const firstPrompt = await page.locator('.course-readout-line > p').first().textContent();
+  await page.evaluate(() => {
+    writeCourseMemory('math-garden:course:g3-measure-capacity', { independent: 5, total: 5, attempts: 1 });
+    writeCourseMemory('math-garden:review:g3-measure-capacity', { streak: 1, reviewOn: '2026-11-05', practiceOn: '2026-11-04', variant: 1 });
+  });
+  await page.reload();
+  await button(page, '开始练习').click();
+  await expect(page.getByText('第 1 / 5 题', { exact: true })).toBeVisible();
+  await expect(page.locator('.course-readout-line > p').first()).not.toHaveText(firstPrompt);
+  await page.clock.setFixedTime(new Date(2026, 10, 5, 12));
+  await page.goto('/#course/grade-3');
+  await link(page, '复习 · 量一量，能装多少水').click();
+  await expect(page.getByText('第 1 / 3 题', { exact: true })).toBeVisible();
+  await expect(page.getByText('水壶能装 1 升，水瓶能装 750 毫升。水壶多装多少毫升？')).toBeVisible();
+  await button(page, '250').click();
+  await expect(page.getByText('答对啦！', { exact: true })).toBeVisible();
+});
+
+test('全部课程首练与重练各有五道有效题，复习至少带一道新题', async ({ page }) => {
+  await page.goto('/#course');
+  const failures = await page.evaluate(() => {
+    const key = question => JSON.stringify([question.prompt, question.model, question.build, question.line]);
+    const errors = [];
+    for (const lesson of courseLessons) {
+      const first = makeCoursePractice(lesson);
+      const firstKeys = new Set(first.map(key));
+      for (let attempt = 0; attempt < 8; attempt += 1) {
+        const practice = makeCoursePractice(lesson, attempt);
+        const practiceKeys = new Set(practice.map(key));
+        const review = makeCourseReview(lesson, attempt, attempt);
+        if (practiceKeys.size !== 5 || practice.length !== 5) errors.push(`${lesson.id}: 练习数量不正确`);
+        if (attempt === 1 && practice.every(question => firstKeys.has(key(question)))) errors.push(`${lesson.id}: 重练没有换题`);
+        if (review.length !== 3 || review.every(question => practiceKeys.has(key(question)))) errors.push(`${lesson.id}: 复习没有换题`);
+        for (const item of [...practice, ...review]) {
+          if (item.choices && (!item.choices.includes(item.answer) || new Set(item.choices).size !== item.choices.length)) {
+            errors.push(`${lesson.id}: 选择题缺答案或有重复选项`);
+          }
+          if (item.build && (item.answer < 0 || item.answer > item.build.max - (item.build.fixed ?? 0))) {
+            errors.push(`${lesson.id}: 摆放题无法摆出答案`);
+          }
+          if (item.line && (item.answer < item.line.min || item.answer > item.line.max)) {
+            errors.push(`${lesson.id}: 数轴上没有答案`);
+          }
+        }
+      }
+    }
+    return errors;
+  });
+  expect(failures).toEqual([]);
 });
 
 test('十个一捆保留总数量，捆完后孩子自己读出几捆几根', async ({ page }) => {

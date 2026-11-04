@@ -13,8 +13,8 @@ test('数数选项换序，重试和求助保留顺序，完成后可以换游�
   await button('跳过示范').click();
   await button('开始练习').click();
 
-  for (const [index, amount] of [1, 3, 5].entries()) {
-    await expect(page.getByText(`第 ${index + 1} / 3 题`, { exact: true })).toBeVisible();
+  for (const [index, amount] of [1, 3, 2, 4, 5].entries()) {
+    await expect(page.getByText(`第 ${index + 1} / 5 题`, { exact: true })).toBeVisible();
     await expect(flowers).toHaveCount(amount);
     await expect(answers).toBeHidden();
 
@@ -45,12 +45,12 @@ test('数数选项换序，重试和求助保留顺序，完成后可以换游�
     await next.click();
   }
 
-  await expect(page.getByRole('status')).toHaveText('三题都完成啦！');
+  await expect(page.getByRole('status')).toHaveText('这一轮完成啦！');
   await expect(start).toBeFocused();
   await start.click();
   await button('开始练习').click();
-  await expect(page.getByText('第 1 / 3 题', { exact: true })).toBeVisible();
-  await expect(flowers).toHaveCount(2);
+  await expect(page.getByText('第 1 / 5 题', { exact: true })).toBeVisible();
+  await expect(flowers).toHaveCount(3);
   await button('退出游戏').click();
   await expect(start).toBeFocused();
 });

@@ -1,10 +1,30 @@
-function renderCourseBuild({ max, fixed = 0, frame }) {
+function renderCourseBuild({ max, fixed = 0, frame, token, label: rowLabel }) {
+  if (token === 'bar') {
+    return `<div class="course-build course-bar-build" role="group" aria-label="${courseText(rowLabel)}，已有 ${fixed} 格">
+      ${courseCells(max, index => index < fixed
+        ? '<span class="course-plot course-fixed" aria-hidden="true"></span>'
+        : `<button type="button" class="course-plot" aria-label="填到第 ${index + 1} 格" aria-pressed="false" data-plot data-plot-stop="${index}">${index + 1}</button>`)}
+    </div><button type="button" data-action="check-build" class="primary course-action">填好了</button>`;
+  }
   const label = (frame ? '十格花坛' : '花位') + (fixed ? `，已有 ${fixed} 朵花` : '');
   return `<div class="course-build${frame ? ' course-build-frame' : ''}" role="group" aria-label="${label}">
     ${courseCells(max, index => index < fixed
       ? `<span class="course-plot course-fixed">${flowerDot(index, false)}</span>`
       : `<button type="button" class="course-plot" aria-label="第 ${index + 1} 格" aria-pressed="false" data-plot><img src="./assets/count-flower.svg" alt="" width="36" height="36"></button>`)}
   </div><button type="button" data-action="check-build" class="primary course-action">放好了</button>`;
+}
+
+function toggleCoursePlot(button) {
+  if (!('plotStop' in button.dataset)) {
+    button.setAttribute('aria-pressed', String(button.getAttribute('aria-pressed') !== 'true'));
+    return;
+  }
+  const cells = [...button.closest('.course-bar-build').querySelectorAll('[data-plot-stop]')];
+  const lastFilled = cells.filter(cell => cell.getAttribute('aria-pressed') === 'true').pop();
+  const end = button === lastFilled ? -1 : Number(button.dataset.plotStop);
+  for (const cell of cells) {
+    cell.setAttribute('aria-pressed', String(Number(cell.dataset.plotStop) <= end));
+  }
 }
 
 function renderCourseLineInput({ min, max, marks = [] }) {

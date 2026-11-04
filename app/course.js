@@ -14,7 +14,9 @@ let returnToChallenge;
 let returnToStation;
 
 function saveResult() {
-  writeCourseMemory(`math-garden:course:${lesson.id}`, { independent, total: lesson.practice.length });
+  writeCourseMemory(`math-garden:course:${lesson.id}`, {
+    independent, total: practiceItems.length, attempts: (readResult(lesson)?.attempts ?? 0) + 1,
+  });
 }
 
 function stageOf(item) {
@@ -26,7 +28,7 @@ function lessonLink(item, text, primary = false) {
 }
 
 function reviewLink(item, text) {
-  if (!makeReviewPractice(item.id, 1)) return lessonLink(item, text);
+  if (!spacedCoursePractice(item, 1)?.length) return lessonLink(item, text);
   return `<a class="course-action" href="#course/review/${item.id}">${courseText(text)}</a>`;
 }
 
@@ -64,6 +66,10 @@ function renderMap(stageId) {
     <nav class="course-stages" aria-label="学习阶段">
       ${courseStages.map(stage => `<a class="course-action" href="#course/${stage.id}"${stage === active ? ' aria-current="page"' : ''}>${stage.label}</a>`).join('')}
     </nav>
+    ${active.id === 'grade-3' ? `<section class="course-panel workshop-review" aria-labelledby="grade-workshop">
+      <div><h2 id="grade-workshop">三年级数学工坊</h2><p>画图解生活题、摆纸带认识分数，也可以混合复习。</p></div>
+      <a class="primary course-action" href="${workshopRoute}">进数学工坊</a>
+    </section>` : ''}
     <section class="course-panel" aria-labelledby="stage-title">
       <div class="course-top">
         <div><h2 id="stage-title">${courseText(active.title)}</h2><p>${courseText(active.description)}</p></div>
@@ -100,20 +106,36 @@ function wrapLesson(content, routeBack = returnToChallenge && challengeRouteHref
 }
 
 function renderExample() {
-  const { title, goal, example } = lesson;
+  const { title, goal } = lesson;
+  const teaching = lesson.teaching ?? courseTeaching[lesson.id];
+  const activities = workshopLinks(lesson.id);
+  const start = '<button type="button" class="primary course-action" data-action="start">开始练习</button>';
   wrapLesson(`<p class="course-kicker">先看一个例子</p>
     <h1 tabindex="-1">${courseText(title)}</h1><p>${courseText(goal)}</p>
-    <div class="course-model">${renderCourseModel(example.model)}</div>
-    ${renderCourseReadout(example.text, '听例子')}
-    <button type="button" class="primary course-action" data-action="start">开始练习</button>`);
+    ${renderWorkedExample(lesson.example)}
+    <section class="course-teaching" aria-labelledby="course-teaching-title">
+      <h2 id="course-teaching-title">换个例子想一想</h2>
+      ${teaching.model ? `<div class="course-teaching-model">${renderCourseModel(teaching.model)}</div>` : ''}
+      ${renderCourseReadout(teaching.notice, '听问题')}
+      <details class="course-teaching-answer">
+        <summary>看看怎么想</summary>
+        ${renderCourseReadout(teaching.connect, '听讲解')}
+      </details>
+    </section>
+    ${activities ? `<div class="course-controls">${start}${activities}</div>` : start}`);
 }
 
-function renderInput(item) {
+function renderWorkedExample(example) {
+  return `<div class="course-model">${renderCourseModel(example.model)}</div>
+    ${renderCourseReadout(example.text, '听例子')}`;
+}
+
+function renderInput(item, displayedChoices) {
   if (item.build) return renderCourseBuild(item.build);
   if (item.line) return renderCourseLineInput(item.line);
-  if (options.length) {
+  if (displayedChoices.length) {
     const disabled = (item.bundles?.ones ?? 0) >= 10 ? ' disabled' : '';
-    return `<div class="choices course-choices" role="group" aria-label="答案选项">${options.map((value, index) =>
+    return `<div class="choices course-choices" role="group" aria-label="答案选项">${displayedChoices.map((value, index) =>
       `<button type="button" data-option="${index}"${disabled}>${courseText(value)}</button>`).join('')}</div>`;
   }
   return `<form class="course-number-form">
@@ -146,11 +168,15 @@ function renderCourseReadout(text, label, spoken = text) {
 
 function renderQuestionBody(item) {
   options = shuffleOptions(item.choices ?? []);
+  return renderCourseQuestion(item, renderInput(item, options));
+}
+
+function renderCourseQuestion(item, input) {
   const modelText = item.model?.kind === 'text' && !item.model.text.includes('├') ? item.model.text : '';
   const spoken = modelText ? `${modelText}。${item.prompt}` : item.prompt;
   return `${renderCourseReadout(item.prompt, '听题目', spoken)}
     <div class="course-model">${item.bundles ? renderBundleTray(item.bundles.ones) : renderCourseModel(item.model, true)}</div>
-    <div class="course-controls">${renderInput(item)}</div>`;
+    <div class="course-controls">${input}</div>`;
 }
 
 const courseFeedbackFlower = '<img class="course-feedback-flower" src="./assets/count-flower.svg" alt="" width="28" height="28">';
@@ -173,9 +199,17 @@ function renderPractice() {
     <p class="course-note" id="course-hint" hidden>${courseText(item.hint)}</p>
     <div class="course-controls">
       <button type="button" class="course-action" data-action="hint" aria-controls="course-hint" aria-expanded="false">看提示</button>
-      <button type="button" class="course-action" data-action="example-help" hidden>看一遍怎么做</button>
+      <button type="button" class="course-action" data-action="example-help" aria-controls="course-method" aria-expanded="false" hidden>看一遍怎么做</button>
       <button type="button" class="primary course-action" data-action="next" hidden>${step + 1 === practiceItems.length ? '看练习结果' : '下一题'}</button>
-    </div>`}`);
+    </div>
+    <section class="course-teaching" id="course-method" hidden aria-labelledby="course-method-title">
+      <h2 id="course-method-title">回看例题的方法</h2>
+      ${renderWorkedExample(lesson.example)}
+      <details class="course-teaching-answer">
+        <summary>看看这道题的解法</summary>
+        ${renderCourseReadout(item.explanation, '听解法')}
+      </details>
+    </section>`}`);
 }
 
 function checkAnswer(value, attempted) {
@@ -224,6 +258,7 @@ function checkAnswer(value, attempted) {
   }
   courseRoot.querySelector('[data-action="hint"]').hidden = true;
   courseRoot.querySelector('[data-action="example-help"]').hidden = true;
+  courseRoot.querySelector('#course-method').hidden = true;
   const next = courseRoot.querySelector('[data-action="next"]');
   next.hidden = false;
   next.focus();
@@ -231,7 +266,7 @@ function checkAnswer(value, attempted) {
 
 function renderResult() {
   if (mode === 'study') saveResult();
-  scheduleCourseReview(lesson.id, independent === practiceItems.length);
+  scheduleCourseReview(lesson, independent === practiceItems.length);
   const nextLesson = courseLessons[courseLessons.indexOf(lesson) + 1];
   const retryStation = returnToChallenge && canChallengeStation(returnToChallenge, returnToStation);
   wrapLesson(`<p class="course-kicker">又长大了一点</p><h1 tabindex="-1">${mode === 'review' ? '这次复习完成啦' : '这一课练完啦'}</h1>
@@ -270,12 +305,13 @@ function renderPlacementResult() {
 courseRoot.addEventListener('click', event => {
   const button = event.target.closest('button');
   if (!button) return;
+  if (mode === 'workshop' && courseWorkshop.click(button)) return;
   if ('option' in button.dataset) {
     checkAnswer(options[Number(button.dataset.option)], button);
   } else if ('lineValue' in button.dataset) {
     checkAnswer(Number(button.dataset.lineValue), button);
   } else if ('plot' in button.dataset || 'dot' in button.dataset) {
-    button.setAttribute('aria-pressed', String(button.getAttribute('aria-pressed') !== 'true'));
+    toggleCoursePlot(button);
   } else {
     switch (button.dataset.action) {
       case 'hear': {
@@ -286,7 +322,8 @@ courseRoot.addEventListener('click', event => {
         break;
       }
       case 'start':
-        if (mode === 'review') practiceItems = makeReviewPractice(lesson.id, readReviewRecord(lesson.id)?.variant ?? 1);
+        if (mode === 'review') practiceItems = spacedCoursePractice(lesson, readReviewRecord(lesson.id)?.variant ?? 1);
+        else if (mode === 'study') practiceItems = makeCoursePractice(lesson, readResult(lesson)?.attempts ?? 0);
         step = independent = 0;
         renderPractice();
         break;
@@ -313,9 +350,12 @@ courseRoot.addEventListener('click', event => {
         courseRoot.querySelector('[data-action="example-help"]').hidden = false;
         break;
       }
-      case 'example-help':
-        courseRoot.querySelector('.course-status').textContent = practiceItems[step].explanation;
+      case 'example-help': {
+        const method = courseRoot.querySelector('#course-method');
+        method.hidden = !method.hidden;
+        button.setAttribute('aria-expanded', String(!method.hidden));
         break;
+      }
       case 'next':
         step += 1;
         if (step === practiceItems.length) renderResult();
@@ -328,7 +368,9 @@ courseRoot.addEventListener('click', event => {
 courseRoot.addEventListener('submit', event => {
   event.preventDefault();
   const answer = event.target.querySelector('input');
-  if (answer.checkValidity()) checkAnswer(Number(answer.value));
+  if (!answer.checkValidity()) return;
+  if (mode === 'workshop') courseWorkshop.check(Number(answer.value));
+  else checkAnswer(Number(answer.value));
 });
 
 function openCourseRoute(route) {
@@ -343,7 +385,10 @@ function openCourseRoute(route) {
   const showRoute = challengePath && (routeType === 'route'
     || (inChallenge && selectedSkill && !canChallengeStation(challengePath, selectedSkill)));
   gardenShell.select(showRoute || inChallenge || returnToChallenge ? 'home' : 'course');
-  if (showRoute) {
+  if (routeType === 'workshop') {
+    mode = 'workshop';
+    courseWorkshop.open(id);
+  } else if (showRoute) {
     mode = 'route';
     renderChallengeRoute(challengePath, selectedSkill);
   } else if (inChallenge) {
@@ -356,10 +401,10 @@ function openCourseRoute(route) {
     placementRetry = retriedPlacement = false;
     renderPlacementIntro();
   } else if (lesson) {
-    const reviewItems = routeType === 'review' ? makeReviewPractice(lesson.id, readReviewRecord(lesson.id)?.variant ?? 1) : null;
+    const reviewItems = routeType === 'review' ? spacedCoursePractice(lesson, readReviewRecord(lesson.id)?.variant ?? 1) : null;
     mode = reviewItems ? 'review' : 'study';
-    practiceItems = reviewItems ?? lesson.practice;
     if (mode === 'review' || routeType === 'practice') {
+      practiceItems = reviewItems ?? makeCoursePractice(lesson, readResult(lesson)?.attempts ?? 0);
       step = independent = 0;
       renderPractice();
     } else renderExample();
