@@ -41,17 +41,75 @@ const gardenShell = (() => {
     dialog.className = 'garden-parent-dialog';
     dialog.setAttribute('aria-labelledby', 'garden-parent-dialog-title');
     dialog.innerHTML = `<h2 id="garden-parent-dialog-title">家长小角</h2>
-      <p>声音、离线下载和应用更新，请交给家长来设置。</p>
+      <p>声音、离线使用和应用更新，请交给家长来操作。</p>
       <form method="dialog"><button class="secondary" value="cancel" autofocus>返回</button>
-        <a class="primary garden-course-link" href="./parent.html">进入家长中心</a></form>`;
+        <button type="button" class="primary parent-hold" aria-describedby="parent-hold-hint">长按进入</button>
+        <span id="parent-hold-hint" hidden>按住 1 秒</span></form>`;
     document.body.append(dialog);
+    const hold = dialog.querySelector('.parent-hold');
+    let timer = null;
+    let pointer = null;
+
+    function cancelHold() {
+      clearTimeout(timer);
+      timer = null;
+      pointer = null;
+      hold.classList.remove('holding');
+    }
+
+    function startHold() {
+      if (timer !== null || !dialog.open || document.hidden) return;
+      hold.classList.add('holding');
+      timer = setTimeout(() => {
+        cancelHold();
+        if (dialog.open && !document.hidden) location.assign(link.href);
+      }, 1000);
+    }
+
+    hold.addEventListener('pointerdown', (event) => {
+      if (event.button !== 0 || !event.isPrimary || timer !== null) return;
+      event.preventDefault();
+      pointer = { id: event.pointerId, x: event.clientX, y: event.clientY };
+      hold.setPointerCapture(event.pointerId);
+      startHold();
+    });
+    hold.addEventListener('pointermove', (event) => {
+      if (pointer?.id !== event.pointerId) return;
+      const box = hold.getBoundingClientRect();
+      const { clientX: x, clientY: y } = event;
+      if (Math.hypot(x - pointer.x, y - pointer.y) > 12 || x < box.left || x > box.right || y < box.top || y > box.bottom) cancelHold();
+    });
+    for (const event of ['pointerup', 'pointercancel', 'lostpointercapture', 'blur']) {
+      hold.addEventListener(event, cancelHold);
+    }
+    hold.addEventListener('keydown', (event) => {
+      if (event.key !== ' ' && event.key !== 'Enter') return;
+      event.preventDefault();
+      if (!event.repeat) startHold();
+    });
+    hold.addEventListener('keyup', (event) => {
+      if (event.key !== ' ' && event.key !== 'Enter') return;
+      event.preventDefault();
+      cancelHold();
+    });
+    hold.addEventListener('contextmenu', (event) => event.preventDefault());
+    document.addEventListener('visibilitychange', () => { if (document.hidden) cancelHold(); });
+    window.addEventListener('blur', cancelHold);
+
     link.addEventListener('click', (event) => {
       if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
       event.preventDefault();
       if (!dialog.open) dialog.showModal();
     });
-    dialog.addEventListener('close', () => link.focus());
-    window.addEventListener('pagehide', () => { if (dialog.open) dialog.close(); });
+    dialog.addEventListener('cancel', cancelHold);
+    dialog.addEventListener('close', () => {
+      cancelHold();
+      link.focus();
+    });
+    window.addEventListener('pagehide', () => {
+      cancelHold();
+      if (dialog.open) dialog.close();
+    });
   }
 
   return { select };
