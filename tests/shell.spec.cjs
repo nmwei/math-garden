@@ -11,9 +11,38 @@ async function openParent(page) {
   await navLink(page, '家长小角').click();
   const dialog = page.getByRole('dialog');
   await expect(dialog).toBeVisible();
-  await dialog.getByRole('link', { name: '进入家长中心', exact: true }).click();
+  await dialog.getByRole('button', { name: '长按进入', exact: true }).click({ delay: 1100 });
   await expect(heading(page, '家长中心')).toBeVisible();
 }
+
+test('家长入口显示长按进度，松手和拖离会取消，键盘长按可进入', async ({ page }) => {
+  await page.goto('/');
+  const entry = navLink(page, '家长小角');
+  await entry.click();
+  const dialog = page.getByRole('dialog');
+  const hold = dialog.getByRole('button', { name: '长按进入', exact: true });
+  await expect(hold).toHaveAccessibleDescription('按住 1 秒');
+  await hold.click();
+  await expect(dialog).toBeVisible();
+  await expect(hold).not.toHaveClass(/\bholding\b/);
+
+  const box = await hold.boundingBox();
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+  await page.mouse.down();
+  await expect(hold).toHaveClass(/\bholding\b/);
+  await page.mouse.move(box.x - 20, box.y + box.height / 2);
+  await expect(hold).not.toHaveClass(/\bholding\b/);
+  await page.mouse.up();
+
+  await dialog.getByRole('button', { name: '返回', exact: true }).click();
+  await expect(dialog).toBeHidden();
+  await expect(entry).toBeFocused();
+  await entry.click();
+  await hold.focus();
+  await page.keyboard.down('Space');
+  await expect(heading(page, '家长中心')).toBeVisible();
+  await page.keyboard.up('Space');
+});
 
 test('iPad 横竖屏都可在首页、学习地图、数学游戏和家长区之间切换', async ({ page }) => {
   for (const viewport of [{ width: 1024, height: 768 }, { width: 768, height: 1024 }]) {
