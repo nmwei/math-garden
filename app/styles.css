@@ -13,6 +13,10 @@
 [hidden] { display: none !important; }
 body { margin: 0; }
 button, a { touch-action: manipulation; }
+:where(button, a[href], summary) { -webkit-tap-highlight-color: transparent; }
+:where(button, a[href], summary):active:not(:where(:disabled, [aria-disabled="true"], .parent-hold)) {
+  filter: brightness(.94);
+}
 button {
   min-width: 44px;
   min-height: 44px;
@@ -196,6 +200,7 @@ h1 {
 }
 .secondary { font-size: .95rem; }
 .game-hear svg { vertical-align: -.2em; margin-inline-end: .25rem; }
+.practice-muted .game-hear { display: none; }
 .choices button.is-retry {
   background: #f8ecdc;
   border-color: #9a6b39;
@@ -255,7 +260,6 @@ h1 {
   }
 }
 
-#garden-sound[aria-pressed="true"] { background: var(--leaf-light); }
 #choice-game [role="status"] { min-height: 1.5em; margin: .75rem 0; }
 #choice-options button { min-width: clamp(60px, 13vw, 86px); min-height: clamp(60px, 13vw, 86px); }
 .garden-course-link {
@@ -289,7 +293,6 @@ h1 {
   user-select: none;
   -webkit-user-select: none;
   -webkit-touch-callout: none;
-  -webkit-tap-highlight-color: transparent;
 }
 .parent-hold::before {
   content: '';

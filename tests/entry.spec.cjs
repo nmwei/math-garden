@@ -48,10 +48,9 @@ for (const { name, width, height } of viewports) {
   });
 }
 
-test('可以重看示范，刷新后记住声音和各游戏的示范状态', async ({ page }) => {
+test('可以重看示范，刷新后记住各游戏的示范状态', async ({ page }) => {
   await page.goto('/');
   const button = (name) => page.getByRole('button', { name, exact: true });
-  await button('声音').click();
   await button('数一数').click();
   await button('跳过示范').click();
   const replay = button('再看示范');
@@ -66,7 +65,6 @@ test('可以重看示范，刷新后记住声音和各游戏的示范状态', as
   await expect(button('开始练习')).toBeVisible();
 
   await page.reload();
-  await expect(button('声音')).toHaveAttribute('aria-pressed', 'false');
   for (const name of ['数一数', '接着排一排']) {
     await button(name).click();
     await expect(button('开始练习')).toBeVisible();

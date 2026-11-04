@@ -1,5 +1,4 @@
 const home = document.querySelector('#home');
-const sound = document.querySelector('#garden-sound');
 
 function showGardenSection(active, focus) {
   for (const section of document.querySelectorAll('.garden > section')) {
@@ -17,22 +16,13 @@ function sayInGarden(text) {
   gardenVoice.speak(text);
 }
 
-function renderSoundSetting(enabled) {
-  sound.setAttribute('aria-pressed', String(enabled));
-  sound.querySelector('span').textContent = enabled ? '开' : '关';
-  if (!enabled) stopGardenSpeech();
-}
-
 function refreshSoundSetting() {
-  renderSoundSetting(gardenPreferences.soundEnabled());
+  const muted = !gardenPreferences.soundEnabled();
+  document.documentElement.classList.toggle('practice-muted', muted);
+  if (muted) stopGardenSpeech();
 }
 
 refreshSoundSetting();
-sound.addEventListener('click', () => {
-  const enabled = !gardenPreferences.soundEnabled();
-  gardenPreferences.setSoundEnabled(enabled);
-  renderSoundSetting(enabled);
-});
 
 function navigateWithinGarden() {
   const games = location.hash === '#games';

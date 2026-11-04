@@ -113,8 +113,10 @@ test('普通话声音仅在明确操作时播放，选择和静音可跨页保�
   await expect(voice).toHaveValue('test-b');
   expect(await spoken()).toEqual([]);
   await navLink(page, '数学游戏').click();
+  await expect(button(page, '声音')).toHaveCount(0);
   await button(page, '数一数').click();
   await expect(heading(page, '数一数')).toBeVisible();
+  await expect(button(page, '听题目')).toBeVisible();
   expect(await spoken()).toEqual([]);
   await button(page, '第 1 朵花').click();
   await expect.poll(async () => (await spoken()).map(item => item.voice)).toEqual(['test-b']);
@@ -122,13 +124,30 @@ test('普通话声音仅在明确操作时播放，选择和静音可跨页保�
   await openParent(page);
   await button(page, '练习声音').click();
   await expect(button(page, '练习声音')).toHaveAttribute('aria-pressed', 'false');
+  await expect(button(page, '试听声音')).toHaveCount(0);
   await page.reload();
   await expect(button(page, '练习声音')).toHaveAttribute('aria-pressed', 'false');
+  await expect(button(page, '试听声音')).toHaveCount(0);
   await navLink(page, '数学游戏').click();
   await button(page, '数一数').click();
+  await expect(button(page, '听题目')).toHaveCount(0);
   await button(page, '第 1 朵花').click();
   await expect(button(page, '第 1 朵花')).toHaveAttribute('aria-pressed', 'true');
   expect(await spoken()).toEqual([]);
+  await button(page, '回花园').click();
+  for (const game of ['图形找朋友', '接着排一排']) {
+    await button(page, game).click();
+    await expect(heading(page, game)).toBeVisible();
+    await expect(button(page, '听题目')).toHaveCount(0);
+    await button(page, '回花园').click();
+  }
+
+  await openParent(page);
+  await button(page, '练习声音').click();
+  await expect(button(page, '试听声音')).toBeVisible();
+  await navLink(page, '数学游戏').click();
+  await button(page, '数一数').click();
+  await expect(button(page, '听题目')).toBeVisible();
 });
 
 test('家长区确认离线就绪后，断网可重载并打开从未访问的游戏首页', async ({ page, context }) => {

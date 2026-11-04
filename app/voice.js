@@ -40,8 +40,8 @@ const gardenVoice = (() => {
     window.speechSynthesis?.cancel?.();
   }
 
-  function speak(text, { preview = false, onError, onEnd } = {}) {
-    if (!text || (!preview && !gardenPreferences.soundEnabled()) || !supported()) return false;
+  function speak(text, { onError, onEnd } = {}) {
+    if (!text || !gardenPreferences.soundEnabled() || !supported()) return false;
     const voices = list();
     const selectedUri = selected();
     const voice = voices.find(item => item.voiceURI === selectedUri)

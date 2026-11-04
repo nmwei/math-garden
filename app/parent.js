@@ -8,6 +8,8 @@ const voiceNote = voiceSupport.textContent;
 function showParentSound(enabled) {
   parentSound.setAttribute('aria-pressed', String(enabled));
   parentSound.querySelector('span').textContent = enabled ? '开' : '关';
+  previewVoice.hidden = !enabled;
+  if (!enabled) gardenVoice.stop();
 }
 
 function renderParentVoices() {
@@ -26,7 +28,7 @@ function renderParentVoices() {
   } else if (missing) {
     voiceSupport.textContent = '上次选择的声音暂不可用，将自动尝试设备的普通话声音。';
   } else {
-    voiceSupport.textContent = voices.length ? voiceNote : '设备暂未列出可选的普通话声音，可以先试听自动朗读。';
+    voiceSupport.textContent = voices.length ? voiceNote : '设备暂未列出可选的普通话声音。系统会尝试自动选择。';
   }
 }
 
@@ -40,14 +42,11 @@ window.speechSynthesis?.addEventListener?.('voiceschanged', renderParentVoices);
 window.addEventListener('pageshow', refreshParentControls);
 window.addEventListener('storage', refreshParentControls);
 window.addEventListener('pagehide', gardenVoice.stop);
-window.addEventListener('garden-sound-setting', event => showParentSound(event.detail));
 parentSound.addEventListener('click', () => {
   const enabled = !gardenPreferences.soundEnabled();
   gardenPreferences.setSoundEnabled(enabled);
-  if (!enabled) gardenVoice.stop();
   showParentSound(enabled);
   voiceStatus.textContent = enabled ? '练习声音已开启。' : '练习声音已关闭。';
-  window.dispatchEvent(new CustomEvent('garden-sound-setting', { detail: enabled }));
 });
 
 voiceSelect.addEventListener('change', () => {
@@ -60,7 +59,6 @@ previewVoice.addEventListener('click', () => {
   const onError = () => { voiceStatus.textContent = '设备暂时未能朗读。可以检查系统声音后再试。'; };
   voiceStatus.textContent = '正在试听…';
   const started = gardenVoice.speak('你好，欢迎来到一二三小花园。一、二、三，我们开始吧！', {
-    preview: true,
     onError,
     onEnd: () => { voiceStatus.textContent = '试听完成。'; },
   });

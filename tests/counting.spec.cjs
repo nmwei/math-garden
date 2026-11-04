@@ -55,7 +55,7 @@ test('数数选项换序，重试和求助保留顺序，完成后可以换游�
   await expect(start).toBeFocused();
 });
 
-test('报数随有效点按触发，返回会停止帮助，静音后还能数', async ({ page }) => {
+test('报数随有效点按触发，返回会停止帮助', async ({ page }) => {
   await page.clock.install();
   await page.addInitScript(() => {
     window.spoken = [];
@@ -84,12 +84,4 @@ test('报数随有效点按触发，返回会停止帮助，静音后还能数',
   await page.clock.runFor(2500);
   expect(await spokenNumbers()).toEqual([['一', 'zh-CN'], ['一', 'zh-CN']]);
   expect(await page.evaluate(() => window.spoken.at(-1))).toBe('停止');
-
-  await button('声音').click();
-  await expect(button('声音')).toHaveAttribute('aria-pressed', 'false');
-  await button('数一数').click();
-  await button('开始练习').click();
-  await button('第 1 朵花').click();
-  await expect(button('第 1 朵花')).toHaveAttribute('aria-pressed', 'true');
-  expect(await spokenNumbers()).toHaveLength(2);
 });
