@@ -1,6 +1,7 @@
 const gradeThree = {
   id: 'grade-3',
-  label: '三年级',
+  label: '综合',
+  reference: '小学三年级常见内容',
   title: '把数学用起来',
   description: '从进位和估算出发，用乘除法、图形和数据解决花园里的问题。',
   lessons: [

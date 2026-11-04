@@ -30,7 +30,8 @@
   align-items: center;
   gap: .6rem;
 }
-.course-stages { margin-block: 1.1rem; }
+.course-stages { margin-block: 1.1rem .45rem; }
+.course-stage-guide { margin: 0 0 1.1rem; font-size: .9rem; }
 .course-stages > :is(a, button) { background: var(--white); color: inherit; }
 .course-stages > [aria-current] { background: var(--leaf-light); border-color: var(--leaf); font-weight: 750; }
 .course-lessons {

@@ -117,11 +117,11 @@ button:disabled { cursor: default; }
   --today-radius: 24px;
   position: relative;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) min(30%, 264px);
+  grid-template-columns: minmax(0, 1fr) min(30%, 284px);
   align-items: center;
   gap: clamp(.75rem, 3vw, 1.75rem);
   margin-bottom: .75rem;
-  min-height: clamp(10.75rem, 16vw, 12rem);
+  min-height: clamp(12.25rem, 18vw, 14.25rem);
   padding: clamp(1rem, 3vw, 1.65rem);
   border: 1px solid #d9dfc9;
   border-radius: var(--today-radius);

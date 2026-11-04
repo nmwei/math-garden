@@ -59,12 +59,14 @@ test('可以跨学段浏览，设备没有语音也能摆花和修改', async ({
     Object.defineProperty(window, 'speechSynthesis', { value: undefined });
   });
   await page.goto('/#course');
-  for (const stage of ['零基础', '一年级', '二年级', '三年级']) {
+  for (const stage of ['启蒙', '基础', '进阶', '综合']) {
     await expect(link(page, stage)).toBeVisible();
   }
-  await link(page, '一年级').click();
+  await expect(page.getByText('从你会的地方开始，想练哪一课都可以。')).toBeVisible();
+  await link(page, '基础').click();
+  await expect(page.getByText('家长参考 · 小学一年级常见内容')).toBeVisible();
   await expect(link(page, '认识 0～10')).toHaveAccessibleDescription('推荐');
-  await link(page, '零基础').click();
+  await link(page, '启蒙').click();
   await expect(link(page, '看见几朵花')).toHaveAccessibleDescription('推荐');
   await link(page, '照着数字摆花').click();
   await button(page, '开始练习').click();

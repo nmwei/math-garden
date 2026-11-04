@@ -66,13 +66,18 @@ function renderMap(stageId) {
     <nav class="course-stages" aria-label="学习阶段">
       ${courseStages.map(stage => `<a class="course-action" href="#course/${stage.id}"${stage === active ? ' aria-current="page"' : ''}>${stage.label}</a>`).join('')}
     </nav>
+    <p class="course-note course-stage-guide">从你会的地方开始，想练哪一课都可以。</p>
     ${active.id === 'grade-3' ? `<section class="course-panel workshop-review" aria-labelledby="grade-workshop">
-      <div><h2 id="grade-workshop">三年级数学工坊</h2><p>画图解生活题、摆纸带认识分数，也可以混合复习。</p></div>
+      <div><h2 id="grade-workshop">${workshopTitle}</h2><p>画图解生活题、摆纸带认识分数，也可以混合复习。</p></div>
       <a class="primary course-action" href="${workshopRoute}">进数学工坊</a>
     </section>` : ''}
     <section class="course-panel" aria-labelledby="stage-title">
       <div class="course-top">
-        <div><h2 id="stage-title">${courseText(active.title)}</h2><p>${courseText(active.description)}</p></div>
+        <div>
+          <h2 id="stage-title">${courseText(active.title)}</h2>
+          <p>${courseText(active.description)}</p>
+          <small class="course-note">家长参考 · ${courseText(active.reference)}</small>
+        </div>
         <span class="course-note">已练 ${active.lessons.filter(item => readResult(item)).length} / ${active.lessons.length} 课</span>
       </div>
       <div class="course-lessons">${active.lessons.map(item => courseCard(item, item === recommended)).join('')}</div>

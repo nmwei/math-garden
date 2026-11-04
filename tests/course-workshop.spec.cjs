@@ -6,7 +6,7 @@ const link = (page, name) => page.getByRole('link', { name, exact: true });
 test('生活题保留画过的图，选算式、算找零并核对理由', async ({ page }) => {
   await page.goto('/#course/grade-3');
   await link(page, '进数学工坊').click();
-  await expect(page.getByRole('heading', { name: '三年级数学工坊' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: '数学工坊' })).toBeVisible();
   await page.getByRole('link', { name: /逛花园小摊/ }).click();
   await expect(page.getByText(/你带了 60 元/)).toBeVisible();
 
