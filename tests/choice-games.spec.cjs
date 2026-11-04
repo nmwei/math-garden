@@ -4,7 +4,7 @@ const button = (page, name) => page.getByRole('button', { name, exact: true });
 
 test('图形练习可以重试，用提示认识旋转后的图形', async ({ page }) => {
   await page.addInitScript(() => { Math.random = () => 0; });
-  await page.goto('/');
+  await page.goto('/#games');
   const start = button(page, '图形找朋友');
   await start.click();
   await button(page, '跳过示范').click();
@@ -34,12 +34,15 @@ test('图形练习可以重试，用提示认识旋转后的图形', async ({ pa
   await expect(page.getByText('换个样子，还是同一种图形。')).toBeVisible();
   await triangle.click();
   await expect(page.getByRole('img', { name: '三角形找到座位了' })).toBeVisible();
-  await button(page, '回花园').click();
+  await button(page, '下一题').click();
+  await button(page, '正方形').click();
+  await button(page, '回游戏列表').click();
+  await expect(page.getByRole('status')).toHaveText('三题都完成啦！');
   await expect(start).toBeFocused();
 });
 
 test('花叶小路有两组完整规律，再玩一局会练到三格一组', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/#games');
   const start = button(page, '接着排一排');
   const path = page.getByRole('group', { name: '花叶小路' });
   const steps = () => path.getByRole('img').evaluateAll(items => items.map(item => item.getAttribute('aria-label').split('：')[1]));
@@ -56,18 +59,21 @@ test('花叶小路有两组完整规律，再玩一局会练到三格一组', as
   await expect(path.locator('.pattern-unit--complete').first()).toHaveCSS('outline-style', 'dashed');
   await button(page, flower).click();
   await expect.poll(steps).toEqual([flower, leaf, flower, leaf, flower]);
-  for (const next of ['下一题', '看看结果']) {
+  for (const next of ['下一题', '回游戏列表']) {
     await button(page, '下一题').click();
     await button(page, leaf).click();
     await expect(button(page, next)).toBeVisible();
   }
-  await button(page, '看看结果').click();
-  await button(page, '再玩一局').click();
+  await button(page, '回游戏列表').click();
+  await expect(page.getByRole('status')).toHaveText('三题都完成啦！');
+  await expect(start).toBeFocused();
+  await start.click();
+  await button(page, '开始练习').click();
   await expect.poll(steps).toEqual([flower, flower, leaf, flower, flower, leaf, flower, flower, '空格']);
   await button(page, leaf).click();
   await button(page, '下一题').click();
   await expect.poll(steps).toEqual([flower, leaf, leaf, flower, leaf, leaf, flower, '空格']);
-  await button(page, '回花园').click();
+  await button(page, '退出游戏').click();
   await expect(start).toBeFocused();
 });
 
@@ -78,7 +84,7 @@ test('三项练习都能重听当前题目', async ({ page }) => {
       value: { getVoices: () => [], speak: ({ text }) => window.spoken.push(text), cancel: () => {} },
     });
   });
-  await page.goto('/');
+  await page.goto('/#games');
   const hear = async (prompt) => {
     await button(page, '听题目').click();
     expect(await page.evaluate(() => window.spoken.at(-1))).toBe(prompt);
@@ -88,10 +94,10 @@ test('三项练习都能重听当前题目', async ({ page }) => {
   await hear('点一朵花，数一个数。');
   for (const flower of await page.getByRole('button', { name: /^第 \d 朵花$/ }).all()) await flower.click();
   await hear('一共有几朵花？');
-  await button(page, '回花园').click();
+  await button(page, '退出游戏').click();
   await button(page, '图形找朋友').click();
   await hear('看一看这个座位，哪个图形能坐进去？');
-  await button(page, '回花园').click();
+  await button(page, '退出游戏').click();
   await button(page, '接着排一排').click();
   await hear('花朵、叶子、花朵、叶子、花朵。下一格放什么？');
 });

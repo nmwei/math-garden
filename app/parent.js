@@ -41,7 +41,6 @@ refreshParentControls();
 window.speechSynthesis?.addEventListener?.('voiceschanged', renderParentVoices);
 window.addEventListener('pageshow', refreshParentControls);
 window.addEventListener('storage', refreshParentControls);
-window.addEventListener('pagehide', gardenVoice.stop);
 parentSound.addEventListener('click', () => {
   const enabled = !gardenPreferences.soundEnabled();
   gardenPreferences.setSoundEnabled(enabled);
@@ -104,3 +103,39 @@ reloadPage.addEventListener('click', () => {
   if (hasWaitingUpdate) void gardenOffline.applyUpdate();
   else location.reload();
 });
+
+const parentSettings = document.querySelector('#parent-settings');
+const challengeRecords = document.querySelector('#challenge-records');
+
+function renderChallengeRecords() {
+  if (challengeRecords.hidden) return;
+  document.querySelector('#challenge-record-groups').innerHTML = challengePaths.map(path => `
+    <section class="parent-panel" aria-labelledby="record-${path.id}-title">
+      <h2 id="record-${path.id}-title">${path.title}</h2>
+      <ul class="challenge-results">${path.skills.map(skill => {
+        const record = readChallengeRecord(path, skill);
+        return `<li><span>${skill.title}</span>${record
+          ? `<strong>${challengeOutcomeLabels[record.outcome]}</strong>`
+          : `<a class="garden-text-link record-check-link" href="#course/challenge/${path.id}/${skill.id}"
+            aria-label="还没测 · 去测「${skill.title}」">还没测 · 去测 <span aria-hidden="true">→</span></a>`}</li>`;
+      }).join('')}</ul>
+    </section>`).join('');
+}
+
+function openParentView(showingRecords) {
+  const returningToSettings = !showingRecords && !challengeRecords.hidden;
+  showGardenSection(showingRecords ? challengeRecords : parentSettings);
+  refreshParentControls();
+  document.title = `${showingRecords ? '闯关记录' : '家长小角'} · 123 小花园`;
+  if (showingRecords) {
+    renderChallengeRecords();
+    document.querySelector('#challenge-records-title').focus();
+  } else if (returningToSettings) {
+    document.querySelector('#open-challenge-records').focus();
+  } else {
+    document.querySelector('#parent-title').focus();
+  }
+}
+
+window.addEventListener('pageshow', renderChallengeRecords);
+window.addEventListener('storage', renderChallengeRecords);

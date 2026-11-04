@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 const remote = 'git@github.com:nmwei/math-garden.git';
-const sitePaths = ['app', 'assets', 'index.html', 'course.html', 'parent.html', 'manifest.webmanifest', 'sw.js'];
+const sitePaths = ['app', 'assets', 'index.html', 'manifest.webmanifest', 'sw.js'];
 
 function localGit(...args) {
   return execFileSync('git', args, {

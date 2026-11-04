@@ -4,15 +4,13 @@ const link = (page, name) => page.getByRole('link', { name, exact: true });
 const button = (page, name) => page.getByRole('button', { name, exact: true });
 const heading = (page, name) => page.getByRole('heading', { name, exact: true });
 
-test('从首页练完第一课，求助单独计入，刷新后保留进度', async ({ page }) => {
+test('从花园闯关页练完第一课，求助单独计入，刷新后保留进度', async ({ page }) => {
   await page.goto('/');
-  await link(page, '开始学数学').click();
-  await expect(page).toHaveURL(/\/course\.html/);
-  await expect(heading(page, '数学学习地图')).toBeVisible();
-  await link(page, '看见几朵花').click();
+  await expect(heading(page, '今天学什么')).toBeVisible();
+  await expect(page.getByText('看见几朵花', { exact: true })).toBeVisible();
+  await link(page, '试一节').click();
+  await expect(page).toHaveURL(/#course\/practice\/notice-small$/);
   await expect(heading(page, '看见几朵花')).toBeVisible();
-  await expect(page.getByText('这是一朵，那也是一朵。两朵在一起，用 2 表示。')).toBeVisible();
-  await button(page, '开始练习').click();
 
   await button(page, '1').click();
   await button(page, '下一题').click();
@@ -28,14 +26,17 @@ test('从首页练完第一课，求助单独计入，刷新后保留进度', as
   await link(page, '回学习地图').click();
   await page.reload();
   await expect(link(page, '看见几朵花').getByText('已练 · 可复习')).toBeVisible();
-  await expect(link(page, '开始推荐课')).toHaveAttribute('href', /#lesson\/count-total$/);
+  await expect(link(page, '开始推荐课')).toHaveAttribute('href', /#course\/lesson\/count-total$/);
+  await link(page, '花园闯关').click();
+  await expect(page.getByRole('region', { name: '今天学什么' }).getByText('每朵只数一次', { exact: true })).toBeVisible();
+  await expect(link(page, '练这一课')).toHaveAttribute('href', /#course\/practice\/count-total$/);
 });
 
 test('可以跨学段浏览，设备没有语音也能摆花和修改', async ({ page }) => {
   await page.addInitScript(() => {
     Object.defineProperty(window, 'speechSynthesis', { value: undefined });
   });
-  await page.goto('/course.html');
+  await page.goto('/#course');
   for (const stage of ['零基础', '一年级', '二年级', '三年级']) {
     await expect(link(page, stage)).toBeVisible();
   }

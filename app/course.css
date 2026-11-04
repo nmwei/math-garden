@@ -268,3 +268,6 @@ button.course-dot[aria-pressed="true"]::after {
   border-radius: .3rem;
 }
 .course-tape > div > .course-tape-unknown { background: #f7edda; border-style: dashed; }
+
+.challenge-message { margin: .55rem 0 0; }
+.course-done .challenge-results { max-width: 30rem; }

@@ -5,8 +5,7 @@ const button = (page, name) => page.getByRole('button', { name, exact: true });
 const heading = (page, name) => page.getByRole('heading', { name, exact: true });
 
 test('小任务找到合适的学习起点，保留早期课程的未练状态', async ({ page }) => {
-  await page.goto('/course.html');
-  await link(page, '找找学习起点').click();
+  await page.goto('/#course/start-check');
   await button(page, '开始找起点').click();
   await button(page, '7').click();
   for (let slot = 1; slot <= 6; slot += 1) await button(page, `第 ${slot} 格`).click();
@@ -18,10 +17,10 @@ test('小任务找到合适的学习起点，保留早期课程的未练状态',
 
   await expect(heading(page, '建议先学「找回缺的一部分」')).toBeVisible();
   await expect(page.getByText('第 3 题是「想想还差几个到 10」。这题还不确定，可以先从这里练起。')).toBeVisible();
-  await expect(link(page, '去试这一课')).toHaveAttribute('href', '#lesson/bridge-missing-part');
+  await expect(link(page, '去试这一课')).toHaveAttribute('href', '#course/lesson/bridge-missing-part');
   await link(page, '回学习地图').click();
   await page.reload();
-  await expect(link(page, '开始推荐课')).toHaveAttribute('href', '#lesson/bridge-missing-part');
+  await expect(link(page, '开始推荐课')).toHaveAttribute('href', '#course/lesson/bridge-missing-part');
   await link(page, '零基础').click();
   await expect(link(page, '看见几朵花').getByText('可以开始', { exact: true })).toBeVisible();
 });
@@ -32,7 +31,7 @@ for (const { first, retry, title, destination, reason } of [
   { first: '7', title: '在 10 的小站停一下', destination: 'bridge-cross-ten', reason: /这 6 个小任务都做对了/ },
 ]) {
   test(`后五题全对，首题答 ${first}${retry ? `、复核答 ${retry}` : ''} 时推荐「${title}」`, async ({ page }) => {
-    await page.goto('/course.html#start-check');
+    await page.goto('/#course/start-check');
     await button(page, '开始找起点').click();
     await button(page, first).click();
     if (retry) {
@@ -45,14 +44,14 @@ for (const { first, retry, title, destination, reason } of [
     for (const answer of ['4', '5', '40', '24']) await button(page, answer).click();
 
     await expect(heading(page, `建议先学「${title}」`)).toBeVisible();
-    await expect(link(page, '去试这一课')).toHaveAttribute('href', `#lesson/${destination}`);
+    await expect(link(page, '去试这一课')).toHaveAttribute('href', `#course/lesson/${destination}`);
     await expect(page.getByText(reason)).toBeVisible();
   });
 }
 
 test('在家活动同一天固定，隔天重新展开就会换一条', async ({ page }) => {
   await page.clock.setFixedTime(new Date(2026, 10, 3, 12));
-  await page.goto('/course.html#foundation');
+  await page.goto('/#course/foundation');
   const details = page.locator('.course-home-task');
   const summary = details.locator('summary');
   const task = details.locator('p');
@@ -81,7 +80,7 @@ test('在家活动同一天固定，隔天重新展开就会换一条', async ({
 
 test('完成一课后隔日出现复习，复习采用另一组题', async ({ page }) => {
   await page.clock.setFixedTime(new Date(2026, 10, 4, 12));
-  await page.goto('/course.html#lesson/count-total');
+  await page.goto('/#course/lesson/count-total');
   await button(page, '开始练习').click();
   await button(page, '5').click();
   await button(page, '下一题').click();
@@ -96,13 +95,17 @@ test('完成一课后隔日出现复习，复习采用另一组题', async ({ pa
   await page.clock.setFixedTime(new Date(2026, 10, 5, 12));
   await page.reload();
   await expect(heading(page, '今日复习')).toBeVisible();
-  await link(page, '复习 · 每朵只数一次').click();
-  await expect(page).toHaveURL(/#review\/count-total$/);
+  await expect(link(page, '复习 · 每朵只数一次')).toBeVisible();
+  await link(page, '花园闯关').click();
+  await expect(page.getByRole('region', { name: '今天学什么' }).getByText('每朵只数一次', { exact: true })).toBeVisible();
+  await expect(link(page, '练这一课')).toBeHidden();
+  await link(page, '复习一下').click();
+  await expect(page).toHaveURL(/#course\/review\/count-total$/);
   await expect(page.getByText('小花藏在几排里，一共有几朵？', { exact: true })).toBeVisible();
 });
 
 test('十个一捆保留总数量，捆完后孩子自己读出几捆几根', async ({ page }) => {
-  await page.goto('/course.html#lesson/bridge-bundle-ten');
+  await page.goto('/#course/lesson/bridge-bundle-ten');
   await button(page, '开始练习').click();
 
   const bundle = button(page, '把 10 根捆一捆');
