@@ -64,12 +64,29 @@ function renderCourseModel(model, interactive = false) {
       return `<div class="course-bars" role="img" aria-label="${courseText(model.items.map(([label, value]) => `${label} ${value}`).join('，'))}">
         ${model.items.map(([label, value]) => `<div><b>${courseText(label)}</b><span>${courseCells(value, () => '<i></i>')}</span></div>`).join('')}
       </div>`;
+    case 'tally':
+      return `<p class="course-model-text" role="img" aria-label="${courseText(model.items.map(([label, value]) => `${label} ${value} 笔`).join('，'))}">
+        ${model.items.map(([label, value]) => `${courseText(label)}　${'│'.repeat(value)}`).join('　　')}
+      </p>`;
     case 'fraction':
       return `<div class="course-fraction" role="img" aria-label="平均分成 ${model.parts} 份，涂了 ${model.filled} 份">
         ${courseCells(model.parts, index => `<span class="${index < model.filled ? 'filled' : ''}"></span>`)}
       </div>`;
     case 'shapes':
       return `<div class="course-shapes">${model.items.map(courseShape).join('')}</div>`;
+    case 'shape-puzzle': {
+      const { layout } = model;
+      const figures = {
+        diagonal: ['正方形，从左上角到右下角画了一条分割线', 80, 80, 'M15 15L65 65'],
+        sideBySide: ['图形沿竖着的虚线分成两块，每块都有四个直角、四条一样长的边', 130, 80, 'M65 15V65'],
+        stacked: ['外边有四个直角，两条竖边比横边长，中间有一条横着的虚线', 80, 130, 'M15 65H65'],
+      };
+      const [label, width, height, seam] = figures[layout];
+      return `<svg viewBox="0 0 ${width} ${height}" width="${width}" height="${height}" role="img" aria-label="${label}">
+        <rect x="15" y="15" width="${width - 30}" height="${height - 30}" fill="var(--course-green)" fill-opacity=".45" stroke="currentColor" stroke-width="2"/>
+        <path d="${seam}" fill="none" stroke="currentColor" stroke-width="2" stroke-dasharray="4 3"/>
+      </svg>`;
+    }
     case 'clock':
       return courseClock(model);
     case 'text':

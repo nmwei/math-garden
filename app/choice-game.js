@@ -15,6 +15,8 @@ function setupChoiceGames() {
   const games = [
     { id: 'shapes', game: shapeGame, entry: document.querySelector('#start-shapes'), played: 0 },
     { id: 'patterns', game: patternGame, entry: document.querySelector('#start-patterns'), played: 0 },
+    { id: 'compare', game: compareGame, entry: document.querySelector('#start-compare'), played: 0 },
+    { id: 'compose', game: composeGame, entry: document.querySelector('#start-compose'), played: 0 },
   ];
   let active;
   let round;
@@ -35,7 +37,7 @@ function setupChoiceGames() {
     progress.hidden = !round;
     if (round) progress.textContent = `第 ${index + 1} / ${round.length} 题`;
     begin.hidden = replay.hidden = next.hidden = true;
-    status.textContent = active.game.instruction;
+    status.textContent = question.instruction ?? active.game.instruction;
     showGardenSection(section, title);
   }
 
@@ -62,6 +64,7 @@ function setupChoiceGames() {
   for (const state of games) {
     state.entry.addEventListener('click', () => {
       active = state;
+      section.dataset.game = state.id;
       title.textContent = state.game.title;
       if (gardenPreferences.demoSeen(state.id)) showReady('准备好啦，一起来玩吧。');
       else startDemo();
@@ -71,12 +74,13 @@ function setupChoiceGames() {
   replay.addEventListener('click', startDemo);
   begin.addEventListener('click', () => {
     const rounds = active.game.questions;
-    round = rounds[active.played % rounds.length];
-    active.played += 1;
+    round = active.game.makeRound?.(active.played)
+      ?? rounds[active.played]
+      ?? shuffleOptions(rounds.flat()).slice(0, rounds[0].length);
     index = 0;
     showQuestion(round[index]);
   });
-  hear.addEventListener('click', () => sayInGarden(question.spokenPrompt ?? active.game.instruction));
+  hear.addEventListener('click', () => sayInGarden(question.spokenPrompt ?? question.instruction ?? active.game.instruction));
   help.addEventListener('click', () => {
     hintLevel = Math.min(hintLevel + 1, 2);
     active.game.hint(question, board, hintLevel);
@@ -89,6 +93,7 @@ function setupChoiceGames() {
   });
   function returnToGames(completed = false) {
     stopGardenSpeech();
+    if (completed) active.played += 1;
     showGameList(active.entry, completed);
   }
   document.querySelector('#choice-back').addEventListener('click', () => returnToGames());
@@ -96,17 +101,18 @@ function setupChoiceGames() {
     button.addEventListener('click', () => {
       if (selected !== question.answer) {
         showRetryChoice(buttons, button);
-        status.textContent = '再看一看，选一次吧。';
+        status.textContent = active.game.retry ?? '再看一看，选一次吧。';
         return;
       }
       stopGardenSpeech();
       showRetryChoice(buttons);
       active.game.solve(question, board);
+      const success = question.success;
       if (!round) {
-        finishDemo(active.game.success, true);
+        finishDemo(success, true);
         return;
       }
-      status.textContent = active.game.success;
+      status.textContent = success;
       options.hidden = help.hidden = hear.hidden = true;
       next.textContent = index === round.length - 1 ? '回游戏列表' : '下一题';
       next.hidden = false;
