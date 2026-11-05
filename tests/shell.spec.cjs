@@ -398,11 +398,15 @@ test('子路径部署中新版等待家长确认，加载后保留原声音设�
     await expect(heading(page, '这一课练完啦')).toBeVisible();
     await openParent(page);
 
-    release = 2;
-    await button(page, '检查更新').click();
-    await expect(page.getByText('新版本已准备好。重新加载后就会启用。', { exact: true })).toBeVisible({ timeout: 15000 });
+    const check = button(page, '检查更新');
     const apply = button(page, '重新加载并回首页');
-    await expect(apply).toBeVisible({ timeout: 15000 });
+    await expect(check).toHaveClass(/\bprimary\b/);
+    await expect(apply).not.toHaveClass(/\bprimary\b/);
+    release = 2;
+    await check.click();
+    await expect(page.getByText('新版本已准备好。重新加载后就会启用。', { exact: true })).toBeVisible({ timeout: 15000 });
+    await expect(check).not.toHaveClass(/\bprimary\b/);
+    await expect(apply).toHaveClass(/\bprimary\b/);
     await expect(document).toHaveAttribute('data-test-release', '1');
     await apply.click();
     await expect(document).toHaveAttribute('data-test-release', '2', { timeout: 15000 });
