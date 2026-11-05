@@ -101,6 +101,7 @@ function setupChoiceGames() {
     button.addEventListener('click', () => {
       if (selected !== question.answer) {
         showRetryChoice(buttons, button);
+        playGardenFeedback(false);
         status.textContent = active.game.retry ?? '再看一看，选一次吧。';
         return;
       }
@@ -110,6 +111,7 @@ function setupChoiceGames() {
       const success = question.success;
       if (!round) {
         finishDemo(success, true);
+        playGardenFeedback(true);
         return;
       }
       status.textContent = success;
@@ -117,6 +119,7 @@ function setupChoiceGames() {
       next.textContent = index === round.length - 1 ? '回游戏列表' : '下一题';
       next.hidden = false;
       next.focus();
+      playGardenFeedback(true);
     });
   });
 }

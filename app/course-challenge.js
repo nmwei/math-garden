@@ -89,6 +89,7 @@ const courseChallenge = (() => {
     if (value !== undefined && value !== question.answer && !retry) {
       retry = true;
       renderQuestion();
+      playGardenFeedback(false);
       return;
     }
     const outcome = value === question.answer ? (retry ? 'retry' : 'independent')
@@ -98,11 +99,13 @@ const courseChallenge = (() => {
     question = null;
     if (!challengePassed(outcome)) {
       renderResult(skill);
+      if (value !== undefined) playGardenFeedback(false);
       return;
     }
     if (!targetSkill) index = nextChallengeIndex(path);
     if (results.length === roundSize || index === path.skills.length) renderResult();
     else openCheckpoint();
+    playGardenFeedback(true);
   }
 
   function renderResult(gap) {

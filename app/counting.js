@@ -147,6 +147,7 @@ function setupCounting() {
     answer.addEventListener('click', () => {
       if (Number(answer.textContent) !== total) {
         showRetryChoice(answerButtons, answer);
+        playGardenFeedback(false);
         status.textContent = '再看看有几朵花，然后选一次。';
         return;
       }
@@ -155,6 +156,7 @@ function setupCounting() {
       flowerBed.classList.add('celebrate');
       if (!round) {
         finishDemo(message, true);
+        playGardenFeedback(true);
         return;
       }
       status.textContent = message;
@@ -162,6 +164,7 @@ function setupCounting() {
       next.textContent = questionIndex === round.length - 1 ? '回游戏列表' : '下一题';
       next.hidden = false;
       next.focus();
+      playGardenFeedback(true);
     });
   }
   return stopFeedback;
