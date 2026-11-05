@@ -2,7 +2,7 @@
   "name": "math-garden",
   "private": true,
   "scripts": {
-    "dev": "node scripts/prepare-feedback-audio.mjs && python3 -m http.server 4175 --bind 127.0.0.1",
+    "dev": "python3 -m http.server 4175 --bind 127.0.0.1",
     "test": "playwright test",
     "deploy": "node scripts/publish.mjs"
   },

@@ -156,7 +156,7 @@ function setupCounting() {
       flowerBed.classList.add('celebrate');
       if (!round) {
         finishDemo(message, true);
-        playGardenFeedback(true);
+        playGardenFeedback(true, flowerBed);
         return;
       }
       status.textContent = message;
@@ -164,7 +164,7 @@ function setupCounting() {
       next.textContent = questionIndex === round.length - 1 ? '回游戏列表' : '下一题';
       next.hidden = false;
       next.focus();
-      playGardenFeedback(true);
+      playGardenFeedback(true, flowerBed);
     });
   }
   return stopFeedback;

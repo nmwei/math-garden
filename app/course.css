@@ -114,15 +114,9 @@
 }
 .course-feedback-correct { background: var(--leaf-light); color: #38644e; }
 .course-feedback-retry { background: #f8ecdc; color: #754f2e; }
-.course-feedback-flower { flex: none; }
 .course-explanation { display: block; margin-top: .4rem; color: #38644e; }
 @media (prefers-reduced-motion: no-preference) {
-  .course-feedback-flower { animation: course-flower-rise .38s ease-out; }
   .course-feedback-retry { animation: course-retry-appear .22s ease-out; }
-  @keyframes course-flower-rise {
-    from { transform: translateY(10px); opacity: .45; }
-    to { transform: translateY(0); opacity: 1; }
-  }
   @keyframes course-retry-appear {
     from { opacity: .55; }
     to { opacity: 1; }
@@ -151,23 +145,7 @@
   font-size: .75rem;
   pointer-events: none;
 }
-.course-choices .course-feedback-flower { display: none; }
-@media (prefers-reduced-motion: no-preference) {
-  .course-choices .course-feedback-flower {
-    position: absolute;
-    display: block;
-    inset-block-end: calc(100% + .15rem);
-    left: 50%;
-    pointer-events: none;
-    animation: course-choice-bloom .65s ease-out both;
-  }
-  @keyframes course-choice-bloom {
-    0% { transform: translate(-50%, 12px) scale(.85); opacity: 0; }
-    35% { opacity: 1; }
-    75% { opacity: 1; }
-    100% { transform: translate(-50%, -13px); opacity: 0; }
-  }
-}
+
 .course-input {
   width: min(9rem, 100%);
   min-height: 44px;

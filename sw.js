@@ -1,4 +1,4 @@
-const VERSION = '1.0.33';
+const VERSION = '1.0.35';
 const scope = self.registration.scope;
 const prefix = `math-garden:app:${encodeURIComponent(scope)}:`;
 const cacheName = `${prefix}${VERSION}`;
@@ -8,7 +8,7 @@ const files = [
   'app/styles.css', 'app/shapes.css', 'app/patterns.css', 'app/course.css', 'app/course-workshop.css', 'app/parent.css',
   'app/main.js', 'app/counting.js', 'app/choice-game.js', 'app/shapes.js', 'app/patterns.js',
   'app/number-games.js', 'app/number-games.css',
-  'app/feedback-audio.js', 'assets/audio/feedback-correct.wav', 'assets/audio/feedback-retry.wav', 'assets/audio/feedback-sources.json',
+  'app/feedback-audio.js', 'app/feedback.css', 'assets/feedback-flower.svg', 'assets/feedback-flower-license.txt', 'assets/audio/feedback-correct.wav', 'assets/audio/feedback-retry.wav', 'assets/audio/feedback-sources.json',
   'app/garden-ui.js', 'app/preferences.js', 'app/offline.js', 'app/shell.js', 'app/voice.js', 'app/parent.js',
   'app/course.js', 'app/course-models.js', 'app/course-memory.js', 'app/course-study.js', 'app/course-manipulatives.js',
   'app/course-foundation.js', 'app/course-grade1.js', 'app/course-grade2.js', 'app/course-grade3.js',

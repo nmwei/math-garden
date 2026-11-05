@@ -123,7 +123,7 @@ test('重练会换题，新课的间隔复习也有独立题目', async ({ page 
   await expect(page.getByText('第 1 / 3 题', { exact: true })).toBeVisible();
   await expect(page.getByText('水壶能装 1 升，水瓶能装 750 毫升。水壶多装多少毫升？')).toBeVisible();
   await button(page, '250').click();
-  await expect(page.getByText('答对啦！', { exact: true })).toBeVisible();
+  await expect(page.locator('.course-status').getByText('答对啦！', { exact: true })).toBeVisible();
 });
 
 test('全部课程首练与重练各有五道有效题，复习至少带一道新题', async ({ page }) => {
