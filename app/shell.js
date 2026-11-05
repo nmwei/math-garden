@@ -43,9 +43,8 @@ const gardenShell = (() => {
     dialog.setAttribute('aria-labelledby', 'garden-parent-dialog-title');
     dialog.innerHTML = `<h2 id="garden-parent-dialog-title">家长小角</h2>
       <p>声音、离线使用和应用更新，请交给家长来操作。</p>
-      <form method="dialog"><button class="secondary" value="cancel" autofocus>返回</button>
-        <button type="button" class="primary parent-hold" aria-describedby="parent-hold-hint">长按进入</button>
-        <span id="parent-hold-hint" hidden>按住 1 秒</span></form>`;
+      <form method="dialog"><button class="secondary" value="cancel" autofocus>取消</button>
+        <button type="button" class="primary parent-hold">按住 1 秒进入</button></form>`;
     document.body.append(dialog);
     const hold = dialog.querySelector('.parent-hold');
     let timer = null;

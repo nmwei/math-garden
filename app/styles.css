@@ -314,7 +314,8 @@ h1 {
 .garden-parent-dialog::backdrop { background: #263c3380; }
 .garden-parent-dialog h2 { margin: 0; }
 .garden-parent-dialog p { color: var(--muted); }
-.garden-parent-dialog form { display: flex; flex-wrap: wrap; justify-content: flex-end; align-items: center; gap: .5rem; }
+.garden-parent-dialog form { display: flex; flex-wrap: wrap; justify-content: flex-end; align-items: center; gap: 10px; }
+.garden-parent-dialog form button { min-height: 44px; padding: 10px 16px; border-radius: 10px; font-size: .95rem; line-height: 1.25rem; white-space: nowrap; }
 .parent-hold {
   position: relative;
   overflow: hidden;

@@ -96,7 +96,7 @@ test('后面的站可以先看对应课程，已有的跨站记录仍可回练',
   await expect(link(station, '再玩一次')).toBeVisible();
   await link(page, '回花园闯关').click();
   await link(page, '家长小角').click();
-  await button(page, '长按进入').click({ delay: 1100 });
+  await button(page, '按住 1 秒进入').click({ delay: 1100 });
   await expect(heading(page, '家长中心')).toBeVisible();
   await expect(link(page, '查看闯关记录')).toHaveCount(0);
 

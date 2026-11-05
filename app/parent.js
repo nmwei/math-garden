@@ -72,7 +72,6 @@ const checkUpdate = document.querySelector('#check-update');
 const reloadPage = document.querySelector('#reload-page');
 const offlineStatus = document.querySelector('[data-offline-status]');
 const updateStatus = document.querySelector('[data-update-status]');
-let hasWaitingUpdate = false;
 
 const offlineLabels = {
   loading: '正在准备离线资源…',
@@ -93,16 +92,16 @@ gardenOffline.subscribe(state => {
   prepareOffline.hidden = state.status !== 'error';
   checkUpdate.disabled = state.status === 'unsupported' || state.status === 'loading'
     || state.checking || state.update === 'applying';
-  hasWaitingUpdate = state.update === 'available';
-  reloadPage.classList.toggle('primary', hasWaitingUpdate || state.update === 'applying');
+  reloadPage.classList.toggle('primary', state.update === 'available' || state.update === 'applying');
   reloadPage.disabled = state.checking || state.update === 'applying';
   updateStatus.textContent = updateLabels[state.update] ?? (state.status === 'unsupported' ? '此浏览器暂不支持应用更新。' : '');
 });
 prepareOffline.addEventListener('click', () => gardenOffline.prepare());
 checkUpdate.addEventListener('click', () => gardenOffline.checkForUpdate());
-reloadPage.addEventListener('click', () => {
-  if (hasWaitingUpdate) void gardenOffline.applyUpdate();
-  else location.reload();
+reloadPage.addEventListener('click', async () => {
+  if (!await gardenOffline.applyUpdate()) return;
+  history.replaceState(null, '', location.pathname + location.search);
+  location.reload();
 });
 
 const parentSettings = document.querySelector('#parent-settings');

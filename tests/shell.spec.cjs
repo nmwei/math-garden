@@ -11,7 +11,7 @@ async function openParent(page) {
   await navLink(page, '家长小角').click();
   const dialog = page.getByRole('dialog');
   await expect(dialog).toBeVisible();
-  await dialog.getByRole('button', { name: '长按进入', exact: true }).click({ delay: 1100 });
+  await dialog.getByRole('button', { name: '按住 1 秒进入', exact: true }).click({ delay: 1100 });
   await expect(heading(page, '家长中心')).toBeVisible();
   await expect(page).toHaveURL(/\/#parent$/);
 }
@@ -20,13 +20,18 @@ test('家长入口显示长按进度，松手和拖离会取消，键盘长按�
   await page.goto('/#parent');
   await expect(page).toHaveURL('/');
   await expect(heading(page, '家长中心')).toBeHidden();
-  await page.getByRole('dialog').getByRole('button', { name: '返回', exact: true }).click();
+  await page.getByRole('dialog').getByRole('button', { name: '取消', exact: true }).click();
   const entry = navLink(page, '家长小角');
   await entry.click();
   const dialog = page.getByRole('dialog');
-  const hold = dialog.getByRole('button', { name: '长按进入', exact: true });
-  await expect(hold).toHaveAccessibleDescription('按住 1 秒');
-  await expect(dialog.getByText('按住 1 秒', { exact: true })).toBeHidden();
+  const hold = dialog.getByRole('button', { name: '按住 1 秒进入', exact: true });
+  const cancelBox = await dialog.getByRole('button', { name: '取消', exact: true }).boundingBox();
+  const holdBox = await hold.boundingBox();
+  const dialogBox = await dialog.boundingBox();
+  expect(holdBox.x - (cancelBox.x + cancelBox.width)).toBe(10);
+  expect(holdBox.height).toBe(cancelBox.height);
+  expect(holdBox.height).toBeGreaterThanOrEqual(44);
+  expect(dialogBox.x + dialogBox.width - (holdBox.x + holdBox.width)).toBeLessThanOrEqual(26);
   await hold.click();
   await expect(dialog).toBeVisible();
   await expect(hold).not.toHaveClass(/\bholding\b/);
@@ -39,7 +44,7 @@ test('家长入口显示长按进度，松手和拖离会取消，键盘长按�
   await expect(hold).not.toHaveClass(/\bholding\b/);
   await page.mouse.up();
 
-  await dialog.getByRole('button', { name: '返回', exact: true }).click();
+  await dialog.getByRole('button', { name: '取消', exact: true }).click();
   await expect(dialog).toBeHidden();
   await expect(entry).toBeFocused();
   await entry.click();
@@ -49,12 +54,12 @@ test('家长入口显示长按进度，松手和拖离会取消，键盘长按�
   await page.keyboard.up('Space');
 });
 
-test('iPad 触控在按钮内滑动仍能长按进入家长小角', async ({ page, context, browserName }) => {
+test('iPad 触控在按钮内滑动仍能按住 1 秒进入家长小角', async ({ page, context, browserName }) => {
   test.skip(browserName !== 'chromium', '使用 Chromium 触控事件模拟');
   await page.setViewportSize({ width: 1376, height: 1032 });
   await page.goto('/');
   await navLink(page, '家长小角').tap();
-  const hold = button(page, '长按进入');
+  const hold = button(page, '按住 1 秒进入');
   const box = await hold.boundingBox();
   const x = box.x + box.width / 2;
   const y = box.y + box.height / 2;
@@ -319,7 +324,9 @@ test('离线就绪后可重载，并打开从未访问的闯关和游戏', async
   await context.setOffline(true);
   await page.reload();
   await expect(heading(page, '家长中心')).toBeVisible();
-  await navLink(page, '花园闯关').click();
+  await button(page, '重新加载并回首页').click();
+  await expect(page).toHaveURL('/');
+  await expect(heading(page, '花园闯关')).toBeVisible();
   await page.getByRole('article', { name: '测量与数据' }).getByRole('link', { name: '开始闯关' }).click();
   await button(page, '乙').click();
   await expect(heading(page, '从钟面上读整时')).toBeVisible();
@@ -394,11 +401,15 @@ test('子路径部署中新版等待家长确认，加载后保留原声音设�
     release = 2;
     await button(page, '检查更新').click();
     await expect(page.getByText('新版本已准备好。重新加载后就会启用。', { exact: true })).toBeVisible({ timeout: 15000 });
-    const apply = button(page, '重新加载页面');
+    const apply = button(page, '重新加载并回首页');
     await expect(apply).toBeVisible({ timeout: 15000 });
     await expect(document).toHaveAttribute('data-test-release', '1');
     await apply.click();
     await expect(document).toHaveAttribute('data-test-release', '2', { timeout: 15000 });
+    await expect(page).toHaveURL(origin + prefix);
+    await expect(heading(page, '花园闯关')).toBeVisible();
+    await expect(heading(page, '家长中心')).not.toBeVisible();
+    await openParent(page);
     await expect(button(page, '练习声音')).toHaveAttribute('aria-pressed', 'false');
     await expect(ready).toBeVisible();
     await navLink(page, '学习地图').click();
