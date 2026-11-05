@@ -232,7 +232,6 @@ const courseWorkshop = (() => {
     }
 
     checked = true;
-    playGardenFeedback(true);
     button?.classList.add('is-correct');
     work.push({ explanation: item.explanation, sketch: workshopSketch(item, value) });
     status.innerHTML = `${renderCourseFeedback('这一步对啦！', 'correct')} <span class="course-explanation">${courseText(item.explanation)}</span>`;
@@ -243,6 +242,7 @@ const courseWorkshop = (() => {
     const next = courseRoot.querySelector('[data-workshop="next"]');
     next.hidden = false;
     next.focus();
+    playGardenFeedback(true, button || status);
   }
 
   function finishTask() {

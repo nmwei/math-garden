@@ -85,27 +85,28 @@ const courseChallenge = (() => {
 
   function answer(value) {
     if (!question) return;
-    const skill = path.skills[index];
-    if (value !== undefined && value !== question.answer && !retry) {
+    const current = question, skill = path.skills[index];
+    question = null; // Lock this answer while feedback is playing.
+    const anchor = courseRoot.querySelector('.course-controls');
+    if (value !== undefined && value !== current.answer && !retry) {
       retry = true;
-      renderQuestion();
-      playGardenFeedback(false);
+      courseRoot.querySelector('#challenge-message').textContent = '换一道同类题，再试试。';
+      advanceAfterGardenFeedback(false, anchor, renderQuestion);
       return;
     }
-    const outcome = value === question.answer ? (retry ? 'retry' : 'independent')
+    const outcome = value === current.answer ? (retry ? 'retry' : 'independent')
       : value === undefined ? 'unsure' : 'practice';
     saveChallengeRecord(path, skill, outcome);
-    results.push({ skill, outcome });
-    question = null;
-    if (!challengePassed(outcome)) {
-      renderResult(skill);
-      if (value !== undefined) playGardenFeedback(false);
-      return;
-    }
-    if (!targetSkill) index = nextChallengeIndex(path);
-    if (results.length === roundSize || index === path.skills.length) renderResult();
-    else openCheckpoint();
-    playGardenFeedback(true);
+    results.push({skill, outcome});
+    if (value === undefined) { renderResult(skill); return; }
+    const correct = challengePassed(outcome);
+    courseRoot.querySelector('#challenge-message').textContent = correct ? '答对啦！' : '找到下一步可以练的内容啦。';
+    advanceAfterGardenFeedback(correct, anchor, () => {
+      if (!correct) { renderResult(skill); return; }
+      if (!targetSkill) index = nextChallengeIndex(path);
+      if (results.length === roundSize || index === path.skills.length) renderResult();
+      else openCheckpoint();
+    });
   }
 
   function renderResult(gap) {

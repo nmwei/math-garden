@@ -171,11 +171,8 @@ function renderCourseQuestion(item, input) {
     <div class="course-controls">${input}</div>`;
 }
 
-const courseFeedbackFlower = '<img class="course-feedback-flower" src="./assets/count-flower.svg" alt="" width="28" height="28">';
-
-function renderCourseFeedback(message, kind, showFlower = true) {
-  const flower = kind === 'correct' && showFlower ? courseFeedbackFlower : '';
-  return `<span class="course-feedback course-feedback-${kind}">${flower}${courseText(message)}</span>`;
+function renderCourseFeedback(message, kind) {
+  return `<span class="course-feedback course-feedback-${kind}">${courseText(message)}</span>`;
 }
 
 function renderPractice() {
@@ -212,17 +209,24 @@ function checkAnswer(value, attempted) {
   if (answered) return;
   const item = practiceItems[step];
   if (mode === 'placement') {
-    if (!placementRetry && value !== undefined && value !== item.answer) {
-      placementRetry = retriedPlacement = true;
-      renderPractice();
-      return;
-    }
-    const answer = placementRetry ? item.retry.answer : item.answer;
-    if (value !== answer) firstGap ??= { item, unsure: value === undefined };
-    placementRetry = false;
-    step += 1;
-    if (step === practiceItems.length) renderPlacementResult();
-    else renderPractice();
+    const proceed = () => {
+      if (!placementRetry && value !== undefined && value !== item.answer) {
+        placementRetry = retriedPlacement = true;
+        renderPractice(); return;
+      }
+      const answer = placementRetry ? item.retry.answer : item.answer;
+      if (value !== answer) firstGap ??= { item, unsure: value === undefined };
+      placementRetry = false; step += 1;
+      if (step === practiceItems.length) renderPlacementResult();
+      else renderPractice();
+    };
+    if (value === undefined) { proceed(); return; }
+    answered = true;
+    const correct = value === (placementRetry ? item.retry.answer : item.answer);
+    const status = document.createElement('p'); status.setAttribute('role','status');
+    status.textContent = correct ? '答对啦！' : '换一道同类题，再试试。';
+    courseRoot.querySelector('.course-panel').append(status);
+    advanceAfterGardenFeedback(correct, attempted || status, proceed);
     return;
   }
   const status = courseRoot.querySelector('.course-status');
@@ -236,15 +240,14 @@ function checkAnswer(value, attempted) {
   }
 
   answered = true;
-  playGardenFeedback(true);
   if (!usedHelp) independent += 1;
   const correctChoice = attempted?.hasAttribute('data-option');
   if (correctChoice) {
     attempted.classList.add('is-correct');
     attempted.setAttribute('aria-describedby', 'course-answer-status');
-    attempted.insertAdjacentHTML('beforeend', `<span class="course-choice-check" aria-hidden="true">✓</span>${courseFeedbackFlower}`);
+    attempted.insertAdjacentHTML('beforeend', `<span class="course-choice-check" aria-hidden="true">✓</span>`);
   }
-  status.innerHTML = `${renderCourseFeedback('答对啦！', 'correct', !correctChoice)}
+  status.innerHTML = `${renderCourseFeedback('答对啦！', 'correct')}
     <span class="course-explanation">${courseText(item.explanation)}</span>`;
   for (const control of courseRoot.querySelectorAll('[data-option], [data-line-value], [data-plot], [data-dot], [data-action="check-build"], .course-input, [type="submit"]')) {
     control.disabled = true;
@@ -255,6 +258,7 @@ function checkAnswer(value, attempted) {
   const next = courseRoot.querySelector('[data-action="next"]');
   next.hidden = false;
   next.focus();
+  playGardenFeedback(true, attempted || status);
 }
 
 function renderResult() {

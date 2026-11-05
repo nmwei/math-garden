@@ -111,7 +111,7 @@ function setupChoiceGames() {
       const success = question.success;
       if (!round) {
         finishDemo(success, true);
-        playGardenFeedback(true);
+        playGardenFeedback(true, board);
         return;
       }
       status.textContent = success;
@@ -119,7 +119,7 @@ function setupChoiceGames() {
       next.textContent = index === round.length - 1 ? '回游戏列表' : '下一题';
       next.hidden = false;
       next.focus();
-      playGardenFeedback(true);
+      playGardenFeedback(true, board);
     });
   });
 }
