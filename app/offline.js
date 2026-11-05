@@ -64,7 +64,7 @@ const gardenOffline = (() => {
     if (!state.checking && state.update !== 'applying') {
       if (availableVersion) {
         changes.update = 'available';
-        changes.message = '新版已准备好，可以重新加载页面。';
+        changes.message = '新版已准备好，可以重新加载并回首页。';
       } else if (state.update === 'available' || state.update === 'idle') {
         changes.update = 'idle';
         changes.message = {
@@ -161,7 +161,7 @@ const gardenOffline = (() => {
       }
       const snapshot = await refresh();
       if (snapshot.availableVersion) {
-        return publish({ checking: false, update: 'available', message: '新版已准备好，可以重新加载页面。' });
+        return publish({ checking: false, update: 'available', message: '新版已准备好，可以重新加载并回首页。' });
       }
       if (!snapshot.ready) throw new Error('App is not ready');
       return publish({ checking: false, update: 'current', message: '当前已是最新版。' });
@@ -172,7 +172,8 @@ const gardenOffline = (() => {
 
   async function applyUpdate() {
     const waiting = registration?.waiting;
-    if (!waiting || state.checking || state.update === 'applying') return state;
+    if (state.checking || state.update === 'applying') return false;
+    if (!waiting) return true;
     const previous = serviceWorkers.controller;
     publish({ update: 'applying', message: '正在启用新版。' });
     try {
@@ -195,11 +196,11 @@ const gardenOffline = (() => {
           finish(error);
         }
       });
-      location.reload();
+      return true;
     } catch {
-      return publish({ update: 'error', message: '暂时无法启用新版，请稍后重试。' });
+      publish({ update: 'error', message: '暂时无法启用新版，请稍后重试。' });
+      return false;
     }
-    return state;
   }
 
   if (supported) {
