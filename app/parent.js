@@ -92,7 +92,9 @@ gardenOffline.subscribe(state => {
   prepareOffline.hidden = state.status !== 'error';
   checkUpdate.disabled = state.status === 'unsupported' || state.status === 'loading'
     || state.checking || state.update === 'applying';
-  reloadPage.classList.toggle('primary', state.update === 'available' || state.update === 'applying');
+  const updateReady = Boolean(state.availableVersion) || state.update === 'applying';
+  checkUpdate.classList.toggle('primary', !updateReady);
+  reloadPage.classList.toggle('primary', updateReady);
   reloadPage.disabled = state.checking || state.update === 'applying';
   updateStatus.textContent = updateLabels[state.update] ?? (state.status === 'unsupported' ? '此浏览器暂不支持应用更新。' : '');
 });
