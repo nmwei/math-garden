@@ -227,11 +227,12 @@ const courseWorkshop = (() => {
     if (!match) {
       independent = false;
       status.textContent = '再想一想，也可以看提示。';
+      playGardenFeedback(false);
       return;
     }
 
     checked = true;
-    gardenVoice.stop();
+    playGardenFeedback(true);
     button?.classList.add('is-correct');
     work.push({ explanation: item.explanation, sketch: workshopSketch(item, value) });
     status.innerHTML = `${renderCourseFeedback('这一步对啦！', 'correct')} <span class="course-explanation">${courseText(item.explanation)}</span>`;

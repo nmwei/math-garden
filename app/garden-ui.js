@@ -1,3 +1,9 @@
+globalThis.gardenFeedback = new globalThis.GardenFeedbackAudio({enabled: () => gardenPreferences.soundEnabled()});
+function playGardenFeedback(correct) {
+  gardenVoice.stop();
+  return gardenFeedback.play(correct);
+}
+
 function shuffleOptions(options) {
   const shuffled = [...options];
   for (let index = shuffled.length - 1; index > 0; index -= 1) {

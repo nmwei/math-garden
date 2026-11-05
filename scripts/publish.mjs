@@ -1,3 +1,4 @@
+import {prepareFeedbackAudio} from './prepare-feedback-audio.mjs';
 import { execFileSync } from 'node:child_process';
 import { mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
@@ -21,6 +22,7 @@ function checkSource() {
 }
 
 async function publish() {
+  const feedback = await prepareFeedbackAudio();
   const source = checkSource();
   const temp = await mkdtemp(join(tmpdir(), 'math-garden-publish-'));
   try {
@@ -36,7 +38,13 @@ async function publish() {
       throw new Error('本地 main 缺少远程提交。请先同步 origin/main，再重新发布。');
     }
 
-    const entries = git(['ls-tree', '-r', '-z', source, '--', ...sitePaths]);
+    let entries = git(['ls-tree', '-r', '-z', source, '--', ...sitePaths]);
+    // Licensed binaries are verified locally and added only to the game snapshot.
+    for (const clip of feedback) {
+      const path = `assets/${clip.file}`;
+      const blob = git(['hash-object', '-w', join(root, path)]).trim();
+      entries += `100644 blob ${blob}\t${path}\0`;
+    }
     const files = new Set();
     for (const entry of entries.split('\0').filter(Boolean)) {
       const separator = entry.indexOf('\t');

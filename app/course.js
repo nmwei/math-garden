@@ -231,11 +231,12 @@ function checkAnswer(value, attempted) {
   if (value !== item.answer) {
     usedHelp = true;
     status.innerHTML = renderCourseFeedback('再试一次，也可以看一个提示。', 'retry');
+    playGardenFeedback(false);
     return;
   }
 
   answered = true;
-  gardenVoice.stop();
+  playGardenFeedback(true);
   if (!usedHelp) independent += 1;
   const correctChoice = attempted?.hasAttribute('data-option');
   if (correctChoice) {

@@ -38,6 +38,7 @@ const gardenVoice = (() => {
   }
 
   function stop() {
+    globalThis.gardenFeedback?.stop();
     playbackId += 1;
     window.speechSynthesis?.cancel?.();
   }
