@@ -84,7 +84,7 @@ function renderMap(stageId) {
     </section>`;
 }
 
-function wrapLesson(content, routeBack = returnToChallenge && challengeRouteHref(returnToChallenge, returnToStation)) {
+function wrapLesson(content, routeBack = returnToChallenge && challengeRouteHref(returnToChallenge, returnToStation), panelClass = '') {
   gardenVoice.stop();
   const stage = lesson ? stageOf(lesson) : null;
   const inChallenge = mode === 'challenge';
@@ -93,7 +93,7 @@ function wrapLesson(content, routeBack = returnToChallenge && challengeRouteHref
   courseRoot.innerHTML = `<div class="course-top">
     ${back}
     <span class="course-kicker">${stage?.label ?? (inChallenge ? '花园闯关' : '找起点')}</span>
-  </div><section class="course-panel course-done">${content}</section>`;
+  </div><section class="course-panel course-done course-activity ${panelClass}">${content}</section>`;
   courseRoot.querySelector('h1').focus();
 }
 
@@ -105,21 +105,21 @@ function renderExample() {
   wrapLesson(`<p class="course-kicker">先看一个例子</p>
     <h1 tabindex="-1">${courseText(title)}</h1><p>${courseText(goal)}</p>
     ${renderWorkedExample(lesson.example)}
-    <section class="course-teaching" aria-labelledby="course-teaching-title">
-      <h2 id="course-teaching-title">换个例子想一想</h2>
+    <details class="course-teaching course-extension">
+      <summary>换个例子想一想</summary>
       ${teaching.model ? `<div class="course-teaching-model">${renderCourseModel(teaching.model)}</div>` : ''}
       ${renderCourseReadout(teaching.notice, '听问题')}
       <details class="course-teaching-answer">
         <summary>看看怎么想</summary>
         ${renderCourseReadout(teaching.connect, '听讲解')}
       </details>
-    </section>
-    ${activities ? `<div class="course-controls">${start}${activities}</div>` : start}`);
+    </details>
+    ${activities ? `<div class="course-controls">${start}${activities}</div>` : start}`, undefined, 'course-example');
 }
 
 function renderWorkedExample(example) {
-  return `<div class="course-model">${renderCourseModel(example.model)}</div>
-    ${renderCourseReadout(example.text, '听例子')}`;
+  return `<div class="worked-example"><div class="course-model">${renderCourseModel(example.model)}</div>
+    ${renderCourseReadout(example.text, '听例子')}</div>`;
 }
 
 function renderInput(item, displayedChoices) {
@@ -128,7 +128,7 @@ function renderInput(item, displayedChoices) {
   if (displayedChoices.length) {
     const disabled = (item.bundles?.ones ?? 0) >= 10 ? ' disabled' : '';
     return `<div class="choices course-choices" role="group" aria-label="答案选项">${displayedChoices.map((value, index) =>
-      `<button type="button" data-option="${index}"${disabled}>${courseText(value)}</button>`).join('')}</div>`;
+      `<button type="button" data-option="${index}"${String(value).length > 12 ? ' class="long-choice"' : ''}${disabled}>${courseText(value)}</button>`).join('')}</div>`;
   }
   return `<form class="course-number-form">
     <label>填入答案 <input class="course-input" inputmode="numeric" pattern="[0-9]+" maxlength="12" required></label>
