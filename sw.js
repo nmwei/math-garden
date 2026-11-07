@@ -1,11 +1,11 @@
-const VERSION = '1.0.35';
+const VERSION = '1.0.36';
 const scope = self.registration.scope;
 const prefix = `math-garden:app:${encodeURIComponent(scope)}:`;
 const cacheName = `${prefix}${VERSION}`;
 const homeUrl = new URL('index.html', scope).href;
 const files = [
   'index.html', 'manifest.webmanifest',
-  'app/styles.css', 'app/shapes.css', 'app/patterns.css', 'app/course.css', 'app/course-workshop.css', 'app/parent.css',
+  'app/styles.css', 'app/shapes.css', 'app/patterns.css', 'app/course.css', 'app/course-layout.css', 'app/course-workshop.css', 'app/parent.css',
   'app/main.js', 'app/counting.js', 'app/choice-game.js', 'app/shapes.js', 'app/patterns.js',
   'app/number-games.js', 'app/number-games.css',
   'app/feedback-audio.js', 'app/feedback.css', 'assets/feedback-flower.svg', 'assets/feedback-flower-license.txt', 'assets/audio/feedback-correct.wav', 'assets/audio/feedback-retry.wav', 'assets/audio/feedback-sources.json',
