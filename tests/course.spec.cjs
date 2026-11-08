@@ -45,9 +45,8 @@ test('从花园闯关页练完第一课，求助单独计入，刷新后保留�
   await recommended.click();
   await expect(page).toHaveURL(/#course\/lesson\/count-total$/);
   await expect(page.getByText('先看一个例子', { exact: true })).toBeVisible();
-  const newExample = page.locator('.course-extension');
+  const newExample = page.getByRole('region', { name: '换个例子想一想' });
   await expect(newExample).toBeVisible();
-  await newExample.locator(':scope > summary').click();
   await newExample.getByText('看看怎么想', { exact: true }).click();
   await expect(newExample.locator('details')).toHaveAttribute('open', '');
   await link(page, '花园闯关').click();
