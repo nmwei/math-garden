@@ -4,7 +4,8 @@
   "scripts": {
     "dev": "python3 -m http.server 4175 --bind 127.0.0.1",
     "test": "playwright test",
-    "deploy": "node scripts/publish.mjs"
+    "deploy": "node scripts/publish.mjs",
+    "build": "node scripts/build.mjs"
   },
   "devDependencies": {
     "@playwright/test": "1.64.1"
