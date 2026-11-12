@@ -18,39 +18,8 @@
   <link rel="stylesheet" href="./app/course-workshop.css">
   <link rel="stylesheet" href="./app/parent.css">
   <link rel="stylesheet" href="./app/course-layout.css">
-  <script src="./app/shapes.js" defer></script>
-  <script src="./app/patterns.js" defer></script>
-  <script src="./app/number-games.js" defer></script>
-  <script src="./app/choice-game.js" defer></script>
-  <script src="./app/counting.js" defer></script>
-  <script src="./app/preferences.js" defer></script>
-  <script src="./app/feedback-audio.js" defer></script>
-  <script src="./app/voice.js" defer></script>
-  <script src="./app/shell.js" defer></script>
-  <script src="./app/offline.js" defer></script>
-  <script src="./app/garden-ui.js" defer></script>
-  <script src="./app/course-models.js" defer></script>
-  <script src="./app/course-foundation.js" defer></script>
-  <script src="./app/course-grade1.js" defer></script>
-  <script src="./app/course-grade2.js" defer></script>
-  <script src="./app/course-grade3.js" defer></script>
-  <script src="./app/course-bridge.js" defer></script>
-  <script src="./app/course-extensions.js" defer></script>
-  <script src="./app/course-enrichment.js" defer></script>
-  <script src="./app/course-teaching.js" defer></script>
-  <script src="./app/course-variants.js" defer></script>
-  <script src="./app/course-practice.js" defer></script>
-  <script src="./app/course-memory.js" defer></script>
-  <script src="./app/course-study.js" defer></script>
-  <script src="./app/course-manipulatives.js" defer></script>
-  <script src="./app/challenge-paths.js" defer></script>
-  <script src="./app/course-challenge.js" defer></script>
-  <script src="./app/course-story-workshop.js" defer></script>
-  <script src="./app/course-fraction-workshop.js" defer></script>
-  <script src="./app/course-workshop.js" defer></script>
-  <script src="./app/course.js" defer></script>
-  <script src="./app/parent.js" defer></script>
-  <script src="./app/main.js" defer></script>
+  <link rel="stylesheet" href="./app/account.css">
+  <script type="module" src="./app/boot.js"></script>
 </head>
 <body>
   <header class="garden-bar"></header>
@@ -219,6 +188,7 @@
         </div>
         <p class="garden-page-note"><span aria-hidden="true">✳</span> 陪孩子慢慢学</p>
       </header>
+      <div id="account-hub-mount"></div>
       <div class="parent-panels">
         <section class="parent-panel parent-voice" aria-labelledby="voice-title">
           <h2 id="voice-title">设备声音</h2>
@@ -252,7 +222,7 @@
         </section>
         <section class="parent-panel parent-progress" aria-labelledby="parent-progress-title">
           <h2 id="parent-progress-title">学习进度</h2>
-          <p>想从头开始时，可以重置当前浏览器的学习进度。</p>
+          <p>重置当前学习进度；登录后同步到账号，手动存档仍保留。</p>
           <button id="reset-progress" type="button">重置学习进度</button>
         </section>
       </div>
@@ -261,7 +231,7 @@
   </main>
   <dialog id="reset-progress-dialog" class="garden-parent-dialog" aria-labelledby="reset-progress-title" aria-describedby="reset-progress-note">
     <h2 id="reset-progress-title">重置学习进度？</h2>
-    <p id="reset-progress-note">这会清除课程练习记录、复习计划、起点建议和闯关记录，清除后无法恢复。声音设置、游戏示范状态和离线资源会保留。</p>
+    <p id="reset-progress-note">这会清除课程练习记录、复习计划、起点建议和闯关记录，登录后清除结果将同步到账号，已有手动存档仍可恢复。声音设置、游戏示范状态和离线资源会保留。</p>
     <form method="dialog">
       <button type="submit" autofocus>取消</button>
       <button id="confirm-reset-progress" class="parent-reset-confirm" type="button">确认重置</button>

@@ -5,6 +5,7 @@ const link = (page, name) => page.getByRole('link', { name, exact: true });
 
 test('生活题保留画过的图，选算式、算找零并核对理由', async ({ page }) => {
   await page.goto('/#course/grade-3');
+  await page.waitForFunction(()=>document.documentElement.dataset.gardenReady==='true');
   await link(page, '进数学工坊').click();
   await expect(page.getByRole('heading', { name: '数学工坊' })).toBeVisible();
   await page.getByRole('link', { name: /逛花园小摊/ }).click();
@@ -41,6 +42,7 @@ test('生活题保留画过的图，选算式、算找零并核对理由', async
 test('同样长的分数纸带对齐，数轴上的点和之前标出的格保留在做法里', async ({ page }) => {
   await page.setViewportSize({ width: 320, height: 720 });
   await page.goto('/#course/lesson/g3-fraction-positions');
+  await page.waitForFunction(()=>document.documentElement.dataset.gardenReady==='true');
   await link(page, '试试 · 换个分法，还是一样长').tap();
   const strip = page.getByRole('group', { name: '格子的标记' });
   const top = await page.locator('.course-fraction').boundingBox();
@@ -73,10 +75,12 @@ test('同样长的分数纸带对齐，数轴上的点和之前标出的格保�
 test('混合复习先选方法，离线做完三个领域且不改动单课复习安排', async ({ page, context }) => {
   const review = { streak: 2, variant: 1, practiceOn: '2020-01-01', reviewOn: '2020-01-03' };
   await page.goto('/#course/workshop');
+  await page.waitForFunction(()=>document.documentElement.dataset.gardenReady==='true');
   await page.evaluate(async record => {
     await navigator.serviceWorker.ready;
-    localStorage.setItem('math-garden:review:read-data', JSON.stringify(record));
-    localStorage.setItem('math-garden:course:read-data', JSON.stringify({ total: 5, independent: 5 }));
+    writeCourseMemory('math-garden:review:read-data', record);
+    writeCourseMemory('math-garden:course:read-data', { total: 5, independent: 5, attempts: 1 });
+    await gardenAccount.learningStorage.whenSaved();
   }, review);
   await page.waitForFunction(() => navigator.serviceWorker.controller);
   await context.setOffline(true);
@@ -113,8 +117,8 @@ test('混合复习先选方法，离线做完三个领域且不改动单课复�
     await button(page, taskIndex === round.length - 1 ? '完成' : '下一道情境题').tap();
   }
   await expect(page.getByText('完成了 3 个情境，其中 3 个情境每一步都独立答对。')).toBeVisible();
-  expect(await page.evaluate(() => JSON.parse(localStorage.getItem('math-garden:review:read-data')))).toEqual(review);
-  expect(await page.evaluate(() => localStorage.getItem('math-garden:workshop:mixed'))).toBe('1');
+  expect(await page.evaluate(() => readCourseMemory('math-garden:review:read-data'))).toEqual(review);
+  expect(await page.evaluate(() => String(readCourseMemory('math-garden:workshop:mixed')))).toBe('1');
   await button(page, '换题再试').tap();
   await expect(page.getByText('开始前，你会先用哪种办法？')).toBeVisible();
   await expect(page.getByText(/整条.*当作长度 1/)).toBeVisible();
@@ -122,6 +126,7 @@ test('混合复习先选方法，离线做完三个领域且不改动单课复�
 
 test('工坊重练轮换情境，同一活动再次出现在混合轮时也会换题', async ({ page }) => {
   await page.goto('/#course/workshop');
+  await page.waitForFunction(()=>document.documentElement.dataset.gardenReady==='true');
   const { count, fractionContexts, measurementContexts } = await page.evaluate(() => {
     const rounds = Array.from({ length: 9 }, (_, round) => makeWorkshopRound('mixed', round)).flat();
     return {

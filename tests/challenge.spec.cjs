@@ -86,8 +86,9 @@ test('后面的站可以先看对应课程，已有的跨站记录仍可回练',
   await expect(heading(page, '图形与规律')).toBeVisible();
   await expect(heading(page, '接着排重复的小组')).toBeHidden();
 
-  await page.evaluate(() => {
-    localStorage.setItem('math-garden:challenge:v1:shape:repeat-unit', JSON.stringify({ attempts: 1, outcome: 'independent' }));
+  await page.evaluate(async () => {
+    writeCourseMemory('math-garden:challenge:v1:shape:repeat-unit', { attempts: 1, outcome: 'independent' });
+    await gardenAccount.learningStorage.whenSaved();
   });
   await page.reload();
   await expect(heading(page, '接着排重复的小组')).toBeVisible();

@@ -18,6 +18,7 @@ async function openParent(page) {
 
 test('家长入口显示长按进度，松手和拖离会取消，键盘长按可进入', async ({ page }) => {
   await page.goto('/#parent');
+  await page.waitForFunction(()=>document.documentElement.dataset.gardenReady==='true');
   await expect(page).toHaveURL('/');
   await expect(heading(page, '家长中心')).toBeHidden();
   await page.getByRole('dialog').getByRole('button', { name: '取消', exact: true }).click();
@@ -58,6 +59,7 @@ test('iPad 触控在按钮内滑动仍能按住 1 秒进入家长小角', async 
   test.skip(browserName !== 'chromium', '使用 Chromium 触控事件模拟');
   await page.setViewportSize({ width: 1376, height: 1032 });
   await page.goto('/');
+  await page.waitForFunction(()=>document.documentElement.dataset.gardenReady==='true');
   await navLink(page, '家长小角').tap();
   const hold = button(page, '按住 1 秒进入');
   const box = await hold.boundingBox();
@@ -75,6 +77,7 @@ test('iPad 横竖屏都可在花园闯关、学习地图、数学游戏和家长
   for (const viewport of [{ width: 1024, height: 768 }, { width: 768, height: 1024 }]) {
     await page.setViewportSize(viewport);
     await page.goto('/');
+  await page.waitForFunction(()=>document.documentElement.dataset.gardenReady==='true');
     await expect(heading(page, '花园闯关')).toBeVisible();
     await expect(navLink(page, '花园闯关')).toHaveAttribute('aria-current', 'page');
     await navLink(page, '学习地图').click();
@@ -139,6 +142,7 @@ test('普通话声音仅在明确操作时播放，选择和静音可跨页保�
 
   const spoken = () => page.evaluate(() => window.testSpoken);
   await page.goto('/');
+  await page.waitForFunction(()=>document.documentElement.dataset.gardenReady==='true');
   expect(await spoken()).toEqual([]);
   await openParent(page);
   expect(await spoken()).toEqual([]);
@@ -219,6 +223,7 @@ test('普通话自动优先本地，远端失败后可用本地声音读例题�
 
   const spoken = () => page.evaluate(() => window.testSpoken);
   await page.goto('/');
+  await page.waitForFunction(()=>document.documentElement.dataset.gardenReady==='true');
   await openParent(page);
   const voice = page.getByRole('combobox', { name: '普通话声音', exact: true });
   await expect(voice.locator('option[value="remote-cn"]')).toHaveText('远端普通话 · zh-CN · 需联网');
@@ -233,6 +238,7 @@ test('普通话自动优先本地，远端失败后可用本地声音读例题�
   expect((await spoken()).map(item => item.voice)).toEqual(['local-cn', 'remote-cn', 'local-cn']);
 
   await page.goto('/#course/lesson/g1-within-twenty');
+  await page.waitForFunction(()=>document.documentElement.dataset.gardenReady==='true');
   await expect(button(page, '听例子')).toBeVisible();
   expect(await spoken()).toHaveLength(3);
   await context.setOffline(true);
@@ -243,19 +249,21 @@ test('普通话自动优先本地，远端失败后可用本地声音读例题�
   expect((await spoken()).at(-1)).toEqual({ text: '8 加 4 等于多少？', voice: 'local-cn' });
 
   await page.goto('/#course/challenge/number');
+  await page.waitForFunction(()=>document.documentElement.dataset.gardenReady==='true');
   await button(page, '听题目').click();
   expect((await spoken()).at(-1)).toEqual({ text: '点点花朵，一共有几朵？', voice: 'local-cn' });
   expect(await spoken()).toHaveLength(6);
   await openParent(page);
   await button(page, '练习声音').click();
   await page.goto('/#course/challenge/number');
+  await page.waitForFunction(()=>document.documentElement.dataset.gardenReady==='true');
   await expect(page.getByText('点点花朵，一共有几朵？', { exact: true })).toBeVisible();
   await expect(button(page, '听题目')).toBeHidden();
 });
 
 test('家长确认后可离线重置学习进度，保留设备设置和离线资源', async ({ page, context }) => {
   const learning = {
-    'math-garden:course:notice-small': JSON.stringify({ independent: 3, total: 3 }),
+    'math-garden:course:notice-small': JSON.stringify({ independent: 3, total: 3, attempts: 1 }),
     'math-garden:review:count-total': JSON.stringify({ streak: 1, variant: 1, practiceOn: '2020-01-01', reviewOn: '2020-01-02' }),
     'math-garden:placement:v1': JSON.stringify('bridge-missing-part'),
     'math-garden:challenge:v1:number:count-total': JSON.stringify({ attempts: 1, outcome: 'independent' }),
@@ -264,16 +272,18 @@ test('家长确认后可离线重置学习进度，保留设备设置和离线�
   const preferences = {
     'math-garden:sound-enabled': 'false',
     'math-garden:voice-uri': 'preferred-voice',
-    'math-garden:demo-seen:counting': 'true',
     'other-app:progress': 'keep',
   };
   const readStorage = keys => page.evaluate(names =>
-    Object.fromEntries(names.map(key => [key, localStorage.getItem(key)])), keys);
+    Object.fromEntries(names.map(key => [key, key.startsWith('math-garden:course:') || key.startsWith('math-garden:review:') || key.startsWith('math-garden:placement:') || key.startsWith('math-garden:challenge:') || key.startsWith('math-garden:workshop:') ? (readCourseMemory(key) === null ? null : JSON.stringify(readCourseMemory(key))) : localStorage.getItem(key)])), keys);
 
   await page.goto('/');
-  await page.evaluate(entries => {
-    for (const [key, value] of Object.entries(entries)) localStorage.setItem(key, value);
-  }, { ...learning, ...preferences });
+  await page.waitForFunction(()=>document.documentElement.dataset.gardenReady==='true');
+  await page.evaluate(async ({learning,preferences}) => {
+    for (const [key,value] of Object.entries(learning)) writeCourseMemory(key,JSON.parse(value));
+    for (const [key,value] of Object.entries(preferences)) localStorage.setItem(key,value);
+    await gardenAccount.learningStorage.whenSaved();
+  }, {learning,preferences});
   await page.reload();
   await expect(page.getByRole('link', { name: '复习一下' })).toBeVisible();
   await openParent(page);
@@ -290,14 +300,12 @@ test('家长确认后可离线重置学习进度，保留设备设置和离线�
   await expect(reset).toBeFocused();
   expect(await readStorage(Object.keys(learning))).toEqual(learning);
 
-  await page.clock.install();
   await reset.click();
   await button(dialog, '确认重置').click();
   await expect(dialog).toBeHidden();
-  const toast = page.getByText('学习进度已重置', { exact: true });
+  const toast = page.getByText('学习进度已重置并保存到本机', { exact: true });
   await expect(toast).toBeVisible();
   await expect(toast).toHaveCSS('position', 'fixed');
-  await page.clock.runFor(3000);
   await expect(toast).toBeHidden();
   await page.reload();
   await expect(ready).toBeVisible();
@@ -314,6 +322,7 @@ test('家长确认后可离线重置学习进度，保留设备设置和离线�
 
 test('离线就绪后可重载，并打开从未访问的闯关和游戏', async ({ page, context }) => {
   await page.goto('/#course');
+  await page.waitForFunction(()=>document.documentElement.dataset.gardenReady==='true');
   await expect(heading(page, '数学学习地图')).toBeVisible();
   await openParent(page);
   await expect(heading(page, '离线使用')).toBeVisible();
@@ -342,7 +351,7 @@ test('离线就绪后可重载，并打开从未访问的闯关和游戏', async
 });
 
 test('子路径部署中新版等待家长确认，加载后保留原声音设置与进度', async ({ page }) => {
-  const root = resolve(__dirname, '..');
+  const root = resolve(__dirname, '../dist');
   const prefix = '/math-garden/';
   const contentType = {
     '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css',
@@ -377,6 +386,7 @@ test('子路径部署中新版等待家长确认，加载后保留原声音设�
   try {
     const origin = `http://127.0.0.1:${server.address().port}`;
     await page.goto(origin + prefix);
+  await page.waitForFunction(()=>document.documentElement.dataset.gardenReady==='true');
     await openParent(page);
     const document = page.locator('html');
     const ready = page.getByText('已准备好，可离线练习。', { exact: true });

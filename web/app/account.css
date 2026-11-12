@@ -1,0 +1,10 @@
+@import './account-runtime/account.css';
+#account-hub-mount {margin:20px 0 28px;}
+
+.parent-nav-copy,[data-parent-identity] {display:inline-flex;align-items:center;gap:6px;min-width:0;}
+[data-parent-identity][hidden] {display:none;}
+.parent-nav-copy {font-size:14px;white-space:nowrap;}
+.parent-username {max-width:64px;overflow:hidden;text-overflow:ellipsis;font-weight:600;}
+.parent-identity-dot {opacity:.5;}
+
+@media(max-width:900px){.parent-link .parent-nav-copy,.garden-parent-link .parent-nav-copy{display:none;}}

@@ -129,7 +129,8 @@ document.querySelector('#confirm-reset-progress').addEventListener('click', () =
     return;
   }
   resetProgressDialog.close();
-  resetProgressToast.textContent = '学习进度已重置';
+  resetProgressToast.textContent = '正在保存重置结果…';
+  gardenAccount.learningStorage.whenSaved().then(()=>{resetProgressToast.textContent='学习进度已重置并保存到本机';},()=>{resetProgressToast.textContent='保存失败，请保留页面并重试';});
   resetProgressToastTimer = window.setTimeout(clearResetProgressToast, 3000);
 });
 resetProgressDialog.addEventListener('close', () => {

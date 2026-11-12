@@ -51,8 +51,9 @@ function setupChoiceGames() {
     showGardenSection(section, begin);
   }
 
-  function finishDemo(message, keepBoard) {
+  async function finishDemo(message, keepBoard) {
     gardenPreferences.markDemoSeen(active.id);
+    try { await gardenAccount.learningStorage.whenSaved(); } catch { return; }
     showReady(message, keepBoard);
   }
 

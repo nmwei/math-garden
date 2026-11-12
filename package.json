@@ -2,12 +2,25 @@
   "name": "math-garden",
   "private": true,
   "scripts": {
-    "dev": "python3 -m http.server 4175 --bind 127.0.0.1",
+    "dev": "node ../garden-platform/scripts/develop.mjs --site math",
     "test": "playwright test",
     "deploy": "node scripts/publish.mjs",
-    "build": "node scripts/build.mjs"
+    "build": "node scripts/build.mjs",
+    "build:domain": "node scripts/build-domain.mjs",
+    "dev:gardens": "node ../garden-platform/scripts/develop.mjs",
+    "build:gardens": "node ../garden-platform/scripts/build-gardens.mjs",
+    "test:server": "node ../garden-platform/scripts/test-server.mjs",
+    "package:server": "node ../garden-platform/scripts/package-server.mjs",
+    "pretest": "node scripts/prepare-account.mjs",
+    "test:domain": "npm run build:domain && node --test server/tests/*.test.mjs",
+    "preview": "python3 -m http.server 4175 --bind 127.0.0.1 --directory dist"
   },
   "devDependencies": {
-    "@playwright/test": "1.64.1"
-  }
+    "@playwright/test": "1.64.1",
+    "@garden/account": "file:../garden-platform/packages/account"
+  },
+  "engines": {
+    "node": "22.x"
+  },
+  "type": "module"
 }

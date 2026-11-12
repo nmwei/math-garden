@@ -68,8 +68,9 @@ function setupCounting() {
     showGardenSection(counting, begin);
   }
 
-  function finishDemo(message, keepFlowers) {
+  async function finishDemo(message, keepFlowers) {
     gardenPreferences.markDemoSeen('counting');
+    try { await gardenAccount.learningStorage.whenSaved(); } catch { return; }
     showReady(message, keepFlowers);
   }
 

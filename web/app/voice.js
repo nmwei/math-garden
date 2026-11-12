@@ -8,7 +8,7 @@ const gardenVoice = (() => {
   function selected() {
     if (writeFailed) return preferred;
     try {
-      preferred = localStorage.getItem(storageKey) ?? '';
+      preferred = gardenAccount.device.getItem(storageKey) ?? '';
     } catch {
       // Keep the last selection when storage is unavailable.
     }
@@ -28,8 +28,8 @@ const gardenVoice = (() => {
   function set(uri) {
     preferred = uri;
     try {
-      if (uri) localStorage.setItem(storageKey, uri);
-      else localStorage.removeItem(storageKey);
+      if (uri) gardenAccount.device.setItem(storageKey, uri);
+      else gardenAccount.device.removeItem(storageKey);
       writeFailed = false;
     } catch {
       // Keep the selection for the current page when storage is unavailable.

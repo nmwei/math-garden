@@ -245,7 +245,7 @@ const courseWorkshop = (() => {
     playGardenFeedback(true, button || status);
   }
 
-  function finishTask() {
+  async function finishTask() {
     results.push({ activity: round[taskIndex].activity, independent });
     taskIndex += 1;
     if (taskIndex < round.length) {
@@ -254,6 +254,7 @@ const courseWorkshop = (() => {
     }
 
     writeCourseMemory(workshopRecordKey(id), workshopAttempts(id) + 1);
+    try { await gardenAccount.learningStorage.whenSaved(); } catch { return; }
     const nextLessons = results.filter(result => !result.independent).map(({ activity }) =>
       courseLessons.find(item => item.id === activity.lessonId)).filter(Boolean);
     const lessons = [...new Set(nextLessons)];

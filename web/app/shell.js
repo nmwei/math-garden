@@ -22,7 +22,7 @@ const gardenShell = (() => {
     <div class="garden-rail-end">
       <div class="garden-sprout" aria-hidden="true"><span></span><i></i><b></b></div>
       <p class="garden-motto">小小的问题，好多种办法。</p>
-      <a class="garden-parent-link" href="#parent" data-garden-nav="parent">${icon('parent')}<span>家长小角</span></a>
+      <a class="garden-parent-link" aria-label="家长小角" href="#parent" data-garden-nav="parent">${icon('parent')}<span>家长小角</span></a>
     </div>`;
 
   function select(id) {

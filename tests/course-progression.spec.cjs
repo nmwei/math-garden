@@ -6,6 +6,7 @@ const heading = (page, name) => page.getByRole('heading', { name, exact: true })
 
 test('小任务找到合适的学习起点，保留早期课程的未练状态', async ({ page }) => {
   await page.goto('/#course/start-check');
+  await page.waitForFunction(()=>document.documentElement.dataset.gardenReady==='true');
   await button(page, '开始找起点').click();
   await button(page, '7').click();
   for (let slot = 1; slot <= 6; slot += 1) await button(page, `第 ${slot} 格`).click();
@@ -32,6 +33,7 @@ for (const { first, retry, title, destination, reason } of [
 ]) {
   test(`后五题全对，首题答 ${first}${retry ? `、复核答 ${retry}` : ''} 时推荐「${title}」`, async ({ page }) => {
     await page.goto('/#course/start-check');
+  await page.waitForFunction(()=>document.documentElement.dataset.gardenReady==='true');
     await button(page, '开始找起点').click();
     await button(page, first).click();
     if (retry) {
@@ -51,6 +53,7 @@ for (const { first, retry, title, destination, reason } of [
 
 test('生活小点子只在相应课后显示为一行文字', async ({ page }) => {
   await page.goto('/#course/grade-1');
+  await page.waitForFunction(()=>document.documentElement.dataset.gardenReady==='true');
   await expect(page.getByText('在家试一试', { exact: true })).toHaveCount(0);
   await link(page, '在 10 的小站停一下').click();
   await button(page, '开始练习').click();
@@ -77,6 +80,7 @@ test('生活小点子只在相应课后显示为一行文字', async ({ page }) 
 test('完成一课后隔日出现复习，复习采用另一组题', async ({ page }) => {
   await page.clock.setFixedTime(new Date(2026, 10, 4, 12));
   await page.goto('/#course/lesson/count-total');
+  await page.waitForFunction(()=>document.documentElement.dataset.gardenReady==='true');
   await button(page, '开始练习').click();
   await button(page, '5').click();
   await button(page, '下一题').click();
@@ -107,11 +111,13 @@ test('完成一课后隔日出现复习，复习采用另一组题', async ({ pa
 
 test('重练会换题，新课的间隔复习也有独立题目', async ({ page }) => {
   await page.goto('/#course/lesson/g3-measure-capacity');
+  await page.waitForFunction(()=>document.documentElement.dataset.gardenReady==='true');
   await button(page, '开始练习').click();
   const firstPrompt = await page.locator('.course-readout-line > p').first().textContent();
-  await page.evaluate(() => {
+  await page.evaluate(async () => {
     writeCourseMemory('math-garden:course:g3-measure-capacity', { independent: 5, total: 5, attempts: 1 });
     writeCourseMemory('math-garden:review:g3-measure-capacity', { streak: 1, reviewOn: '2026-11-05', practiceOn: '2026-11-04', variant: 1 });
+    await gardenAccount.learningStorage.whenSaved();
   });
   await page.reload();
   await button(page, '开始练习').click();
@@ -119,6 +125,7 @@ test('重练会换题，新课的间隔复习也有独立题目', async ({ page 
   await expect(page.locator('.course-readout-line > p').first()).not.toHaveText(firstPrompt);
   await page.clock.setFixedTime(new Date(2026, 10, 5, 12));
   await page.goto('/#course/grade-3');
+  await page.waitForFunction(()=>document.documentElement.dataset.gardenReady==='true');
   await link(page, '复习 · 量一量，能装多少水').click();
   await expect(page.getByText('第 1 / 3 题', { exact: true })).toBeVisible();
   await expect(page.getByText('水壶能装 1 升，水瓶能装 750 毫升。水壶多装多少毫升？')).toBeVisible();
@@ -128,6 +135,7 @@ test('重练会换题，新课的间隔复习也有独立题目', async ({ page 
 
 test('全部课程首练与重练各有五道有效题，复习至少带一道新题', async ({ page }) => {
   await page.goto('/#course');
+  await page.waitForFunction(()=>document.documentElement.dataset.gardenReady==='true');
   const failures = await page.evaluate(() => {
     const key = question => JSON.stringify([question.prompt, question.model, question.build, question.line]);
     const errors = [];
@@ -161,6 +169,7 @@ test('全部课程首练与重练各有五道有效题，复习至少带一道�
 
 test('十个一捆保留总数量，捆完后孩子自己读出几捆几根', async ({ page }) => {
   await page.goto('/#course/lesson/bridge-bundle-ten');
+  await page.waitForFunction(()=>document.documentElement.dataset.gardenReady==='true');
   await button(page, '开始练习').click();
 
   const bundle = button(page, '把 10 根捆一捆');
